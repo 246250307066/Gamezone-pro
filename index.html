@@ -1,0 +1,3983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GameZone Pro - Snooker & Gaming Lounge POS</title>
+  
+  <!-- Mobile & PWA App Configuration for APK / Home Screen -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#020617">
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR2FtZVpvbmUgUHJvIC0gU25vb2tlciAmIExvdW5nZSBQT1MiLCJzaG9ydF9uYW1lIjoiR2FtZVpvbmUiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAyMDYxNyIsInRoZW1lX2NvbG9yIjoiIzAyMDYxNyJ9">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      user-select: none;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    .pulse-running {
+      animation: pulse-subtle 2.5s infinite ease-in-out;
+    }
+    /* Thermal Bill Print Styling */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printable-receipt, #printable-receipt * {
+        visibility: visible !important;
+      }
+      #printable-receipt {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        margin: 0 !important;
+        padding: 8px !important;
+        color: #000 !important;
+        background: #fff !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-950 text-slate-100">
+
+  <!-- TOP HEADER -->
+  <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800/80 px-4 sm:px-6 py-2.5 flex items-center justify-between z-30 shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
+        <i class="fa-solid fa-gamepad"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-black tracking-wider text-white flex items-center gap-2">
+          GameZone <span class="text-[10px] uppercase bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black px-2 py-0.5 rounded-full shadow-sm">SNOOKER STREET</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 font-medium">SNOOKER STREET</p>
+      </div>
+    </div>
+
+    <!-- Live Stat Badges & Clock -->
+    <div class="flex items-center space-x-2 sm:space-x-5">
+      <div class="hidden sm:flex items-center gap-2 text-xs font-semibold">
+        <div class="bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/60 flex items-center gap-2 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-slate-400">Live:</span>
+          <span id="occupied-count" class="text-emerald-400 font-mono font-bold">0</span>
+          <span class="text-slate-500 font-normal">/</span>
+          <span id="total-stations-count" class="text-slate-300 font-mono">0</span>
+        </div>
+        <div class="bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/60 flex items-center gap-1.5 shadow-inner">
+          <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+          <span class="text-slate-400">Shift:</span>
+          <span id="header-total-revenue" class="text-amber-400 font-mono font-bold">₹0</span>
+        </div>
+        <div class="bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/60 flex items-center gap-1.5 shadow-inner" title="All-Time Total Revenue (Including Closed Shifts)">
+          <i class="fa-solid fa-vault text-emerald-400 text-xs"></i>
+          <span class="text-slate-400">All-Time:</span>
+          <span id="header-alltime-revenue" class="text-emerald-400 font-mono font-bold">₹0</span>
+          <button onclick="openAllTimeAdjustModal()" title="Edit All-Time Balance & Log Expenses" class="text-[11px] text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 p-1 rounded transition ml-0.5">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div id="live-clock" class="text-xs font-mono font-bold text-slate-200 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shadow-inner">
+          00:00:00
+        </div>
+        <button id="pwa-install-btn" onclick="installOfflineApp()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow shadow-emerald-500/20 active:scale-95">
+          <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Install Offline App</span>
+        </button>
+        <button onclick="openCloseShopModal()" title="Close Shop / End Shift Summary" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow shadow-rose-600/20 active:scale-95">
+          <i class="fa-solid fa-store-slash"></i> <span>Close Shop</span>
+        </button>
+        <button onclick="openNewStationModal()" title="Add Custom Table or Station" class="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow shadow-amber-400/20 active:scale-95">
+          <i class="fa-solid fa-plus"></i> <span class="hidden md:inline">Add Station</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN BODY LAYOUT -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- SIDEBAR NAV -->
+    <aside class="w-16 sm:w-20 lg:w-56 bg-slate-900/90 border-r border-slate-800/80 flex flex-col justify-between p-2.5 z-20">
+      <div class="space-y-1.5">
+        <button onclick="switchTab('tables')" id="nav-tables" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs sm:text-sm font-semibold transition bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20">
+          <i class="fa-solid fa-dice text-lg w-5 text-center"></i>
+          <span class="hidden lg:inline">Tables & Slots</span>
+        </button>
+        <button onclick="switchTab('cafe')" id="nav-cafe" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-burger text-lg w-5 text-center"></i>
+          <span class="hidden lg:inline">Café POS</span>
+        </button>
+        <button onclick="switchTab('billing')" id="nav-billing" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-receipt text-lg w-5 text-center"></i>
+          <span class="hidden lg:inline">Settled History</span>
+        </button>
+        <button onclick="switchTab('players')" id="nav-players" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-folder-open text-lg w-5 text-center text-amber-400"></i>
+          <span class="hidden lg:inline">Player Dossier</span>
+        </button>
+        <button onclick="switchTab('manage')" id="nav-manage" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-sliders text-lg w-5 text-center"></i>
+          <span class="hidden lg:inline">Station Config</span>
+        </button>
+      </div>
+
+      <div class="p-2 border-t border-slate-800 text-slate-500 text-[11px] hidden lg:block text-center font-mono">
+        GameZone v3.2 &bull; Active
+      </div>
+    </aside>
+
+    <!-- CONTENT WORKSPACE -->
+    <main class="flex-1 overflow-y-auto custom-scroll p-4 sm:p-6 bg-slate-950">
+
+      <!-- TAB 1: TABLES & GAMING STATIONS -->
+      <section id="tab-tables" class="space-y-5">
+        <!-- Filter and Top Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-circle-dot text-amber-400"></i> Active Gaming Tables & Consoles
+            </h2>
+            <p class="text-xs text-slate-400">Monitor active timers, pause/resume matches, order snacks, COUSTMER NAME, CANCLE GAME and complete settlements.</p>
+          </div>
+
+          <!-- Category filter buttons -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="filterStations('all', this)" class="filter-chip active text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 transition shadow-sm">All</button>
+            <button onclick="filterStations('snooker', this)" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Snooker</button>
+            <button onclick="filterStations('pool', this)" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">8-Ball Pool</button>
+            <button onclick="filterStations('ps5', this)" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">PS5 Consoles</button>
+            <button onclick="filterStations('pc', this)" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Gaming PC</button>
+          </div>
+        </div>
+
+        <!-- Station Cards Grid -->
+        <div id="station-grid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5">
+          <!-- Dynamically Injected -->
+        </div>
+      </section>
+
+      <!-- TAB 2: CAFE POS ORDERING -->
+      <section id="tab-cafe" class="hidden space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-utensils text-amber-400"></i> Café & Snack Bar Quick POS
+            </h2>
+            <p class="text-xs text-slate-400">Order refreshments directly to any running station tab or checkout as Standalone Walk-in.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openAddCafeItemModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm active:scale-95">
+              <i class="fa-solid fa-plus"></i> <span>Add Item</span>
+            </button>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-slate-400">Filter:</span>
+              <select id="cafe-category-filter" onchange="renderCafe()" class="bg-slate-800 text-slate-200 text-xs px-3 py-1.5 rounded-xl border border-slate-700 outline-none">
+                <option value="all">All Items</option>
+                <option value="beverage">Beverages & Shakes</option>
+                <option value="snacks">Snacks & Fast Food</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Items Menu Grid -->
+          <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5" id="cafe-menu-grid">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Checkout Cart Sidebar -->
+          <div class="lg:col-span-4 bg-slate-900/90 border border-slate-800/90 rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-cart-shopping text-amber-400"></i> Active Cart
+                </h3>
+                <button onclick="clearCafeCart()" class="text-slate-400 hover:text-red-400 text-xs transition">
+                  <i class="fa-solid fa-trash-can mr-1"></i> Clear
+                </button>
+              </div>
+
+              <!-- Destination Target -->
+              <div class="mt-4">
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Deliver Order To:</label>
+                <select id="cafe-target-station" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-amber-400">
+                  <!-- Injected via JS -->
+                </select>
+              </div>
+
+              <!-- Cart List -->
+              <div class="mt-4">
+                <h4 class="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">Selected Items</h4>
+                <div id="cafe-cart-list" class="space-y-2 max-h-64 overflow-y-auto custom-scroll pr-1">
+                  <!-- Injected items -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Cart Summary & Actions -->
+            <div class="mt-6 border-t border-slate-800 pt-4">
+              <div class="flex justify-between items-center text-xs font-semibold text-slate-400 mb-1">
+                <span>Items Subtotal:</span>
+                <span id="cafe-cart-subtotal" class="font-mono text-slate-200">₹0</span>
+              </div>
+              <div class="flex justify-between items-center text-sm font-bold text-white mb-4">
+                <span>Total Due:</span>
+                <span id="cafe-cart-total" class="text-amber-400 font-mono text-lg">₹0</span>
+              </div>
+              <button onclick="commitCafeOrder()" class="w-full py-3 bg-amber-400 hover:bg-amber-300 active:scale-98 text-slate-950 font-black rounded-xl transition shadow-lg shadow-amber-400/20 text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check"></i> Place & Attach Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SETTLED AUDIT & RECEIPTS LOG -->
+      <section id="tab-billing" class="hidden space-y-5">
+        <div class="flex flex-col gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar text-amber-400"></i> Settled Sessions & Audit History
+              </h2>
+              <p class="text-xs text-slate-400">Comprehensive transaction log for tables, snacks, and instant sales across shifts.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+                <input type="text" id="log-search-input" onkeyup="filterLogs()" placeholder="Search invoice or customer..." class="bg-slate-950 border border-slate-700/80 text-xs rounded-xl pl-8 pr-3 py-2 text-slate-200 placeholder-slate-500 outline-none focus:border-amber-400 w-48 sm:w-60">
+              </div>
+              <button onclick="downloadFilteredSummaryReport()" title="Download Summary Text" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700">
+                <i class="fa-solid fa-file-lines text-xs"></i> Summary
+              </button>
+              <button onclick="exportLogsCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700">
+                <i class="fa-solid fa-file-csv text-emerald-400 text-sm"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Date Filters Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800 text-xs">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-slate-400 font-semibold mr-1 flex items-center gap-1">
+                <i class="fa-solid fa-calendar-days text-amber-400"></i> Period:
+              </span>
+              <button onclick="setDateFilter('today', this)" class="date-chip text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 transition shadow-sm">Today</button>
+              <button onclick="setDateFilter('yesterday', this)" class="date-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Yesterday</button>
+              
+              <!-- Previous Day / Next Day Stepper -->
+              <div class="flex items-center bg-slate-950 border border-slate-700 rounded-xl px-1">
+                <button onclick="stepDay(-1)" title="Previous Day" class="px-2 py-1 text-slate-400 hover:text-amber-400 transition">
+                  <i class="fa-solid fa-chevron-left text-[10px]"></i> Prev Day
+                </button>
+                <button onclick="stepDay(1)" title="Next Day" class="px-2 py-1 text-slate-400 hover:text-amber-400 transition border-l border-slate-800">
+                  Next Day <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+              </div>
+
+              <button onclick="setDateFilter('this_month', this)" class="date-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">This Month</button>
+              <button onclick="setDateFilter('select_month', this)" class="date-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Select Month</button>
+              <button onclick="setDateFilter('custom', this)" class="date-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Custom Range</button>
+              <button onclick="setDateFilter('all', this)" class="date-chip text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">All Time</button>
+            </div>
+
+            <!-- Stats for selected filter -->
+            <div class="flex items-center gap-3 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 font-mono text-xs">
+              <span class="text-slate-400">Found: <b id="filtered-count" class="text-white">0</b></span>
+              <span class="text-slate-600">|</span>
+              <span class="text-slate-400">Total: <b id="filtered-revenue" class="text-amber-400">₹0</b></span>
+            </div>
+          </div>
+
+          <!-- Dynamic Input Controls for Month or Custom Range -->
+          <div id="filter-controls-container" class="hidden flex flex-wrap items-center gap-3 pt-2">
+            <!-- Specific Month Picker -->
+            <div id="month-picker-wrapper" class="hidden flex items-center gap-2">
+              <span class="text-xs text-slate-400">Choose Month:</span>
+              <input type="month" id="filter-month-input" onchange="applyDateFilter()" class="bg-slate-950 border border-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded-xl outline-none focus:border-amber-400 font-mono">
+            </div>
+
+            <!-- Custom Range Pickers -->
+            <div id="range-picker-wrapper" class="hidden flex flex-wrap items-center gap-2 text-xs">
+              <span class="text-slate-400">From:</span>
+              <input type="date" id="filter-from-date" onchange="applyDateFilter()" class="bg-slate-950 border border-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded-xl outline-none focus:border-amber-400 font-mono">
+              <span class="text-slate-400">To:</span>
+              <input type="date" id="filter-to-date" onchange="applyDateFilter()" class="bg-slate-950 border border-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded-xl outline-none focus:border-amber-400 font-mono">
+              <button onclick="applyDateFilter()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-3 py-1.5 rounded-xl transition text-xs">
+                Apply
+              </button>
+            </div>
+
+            <div id="active-filter-label" class="text-xs text-amber-400/90 font-semibold italic ml-auto"></div>
+          </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-800/80 uppercase tracking-wider text-[11px] text-slate-400 border-b border-slate-700/70">
+                <tr>
+                  <th class="p-3.5">Invoice #</th>
+                  <th class="p-3.5">Station / Customer</th>
+                  <th class="p-3.5">Duration</th>
+                  <th class="p-3.5">Table Fee</th>
+                  <th class="p-3.5">Café Bill</th>
+                  <th class="p-3.5">Tax (GST)</th>
+                  <th class="p-3.5">Grand Total</th>
+                  <th class="p-3.5">Payment</th>
+                  <th class="p-3.5">Time</th>
+                  <th class="p-3.5 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="settled-log-body" class="divide-y divide-slate-800/80 font-mono text-[12px]">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="no-logs-msg" class="p-8 text-center text-slate-500 text-xs italic">
+            No settled transactions recorded yet today.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: PLAYER LEDGER / DOSSIER FILE REPORT -->
+      <section id="tab-players" class="hidden space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-folder-open text-amber-400"></i> Player Day Files & Account Ledger
+            </h2>
+            <p class="text-xs text-slate-400">Aggregated breakdown of games played, total session spend, and payment status per person today.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+              <input type="text" id="player-search-input" onkeyup="filterPlayerFiles()" placeholder="Search player name..." class="bg-slate-950 border border-slate-700/80 text-xs rounded-xl pl-8 pr-3 py-2 text-slate-200 placeholder-slate-500 outline-none focus:border-amber-400 w-48 sm:w-60">
+            </div>
+            <button onclick="exportPlayerSummaryText()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700">
+              <i class="fa-solid fa-file-arrow-down text-amber-400"></i> Export File Summary
+            </button>
+          </div>
+        </div>
+
+        <!-- Player Summary Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 uppercase font-semibold">Total Players Today</div>
+              <div id="stat-total-players" class="text-lg font-extrabold text-white font-mono">0</div>
+            </div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 uppercase font-semibold">Total Frames / Matches</div>
+              <div id="stat-total-games-played" class="text-lg font-extrabold text-emerald-400 font-mono">0</div>
+            </div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-400/10 border border-indigo-400/20 text-indigo-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 uppercase font-semibold">Avg Spend / Player</div>
+              <div id="stat-avg-spend" class="text-lg font-extrabold text-amber-400 font-mono">₹0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid of File Folders for Each Customer -->
+        <div id="player-files-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <!-- Dynamically populated via renderPlayerFiles() -->
+        </div>
+
+        <div id="no-players-msg" class="p-12 text-center text-slate-500 text-xs italic bg-slate-900/50 rounded-2xl border border-slate-800/80">
+          No players or game sessions recorded for this shift yet.
+        </div>
+      </section>
+
+      <!-- TAB 4: CONFIGURATION / STATION MANAGEMENT -->
+      <section id="tab-manage" class="hidden space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-screwdriver-wrench text-amber-400"></i> Station & Tariff Configuration
+            </h2>
+            <p class="text-xs text-slate-400">Edit hourly charges, add newly acquired tables, or remove obsolete slots.</p>
+          </div>
+          <button onclick="openNewStationModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-amber-400/20">
+            <i class="fa-solid fa-plus"></i> New Table / Station
+          </button>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-800/80 uppercase tracking-wider text-[11px] text-slate-400 border-b border-slate-700/70">
+                <tr>
+                  <th class="p-3">ID</th>
+                  <th class="p-3">Name</th>
+                  <th class="p-3">Type</th>
+                  <th class="p-3">Hourly Rate</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="station-config-body" class="divide-y divide-slate-800/80">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- CHECKOUT & INVOICE MODAL -->
+  <div id="checkout-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-5 sm:p-6 shadow-2xl relative max-h-[95vh] flex flex-col justify-between overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-cash-register text-amber-400"></i> Checkout Station
+          </h3>
+          <p class="text-[11px] text-slate-400" id="checkout-subtitle">Review breakdown & TEXTFILE bill</p>
+        </div>
+        <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-base p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable Receipt Details Area -->
+      <div class="overflow-y-auto custom-scroll my-4 space-y-4 pr-1">
+
+        <!-- Printable Bill Container (Used for Print Preview) -->
+        <div id="printable-receipt" class="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-200">
+          <div class="text-center pb-2 border-b border-dashed border-slate-700">
+            <h4 class="font-extrabold text-sm text-amber-400 tracking-wider">GAMEZONE </h4>
+            <p class="text-[10px] text-slate-400">SNOOKER STREET</p>
+            <p class="text-[9px] text-slate-500 font-sans mt-0.5" id="receipt-date-time">--</p>
+            <p class="text-[10px] text-slate-400 font-mono" id="receipt-inv-num">INV: #GZ-0000</p>
+          </div>
+
+          <div class="py-2.5 border-b border-dashed border-slate-700 space-y-1">
+            <div class="flex justify-between text-slate-300">
+              <span>Station:</span>
+              <span id="modal-station-name" class="font-bold text-white">--</span>
+            </div>
+            <div class="flex justify-between text-slate-300">
+              <span>Customer:</span>
+              <span class="text-right">
+                <span id="modal-customer-name" class="font-semibold text-amber-400">Guest</span>
+                <span id="modal-customer-mobile" class="block text-[10px] text-slate-400"></span>
+              </span>
+            </div>
+            <div class="flex justify-between text-slate-300">
+              <span>Duration:</span>
+              <span id="modal-duration" class="text-emerald-400 font-bold">00:00:00</span>
+            </div>
+            <div class="flex justify-between text-slate-300">
+              <span>Hourly Tariff:</span>
+              <span id="modal-station-rate">₹0/hr</span>
+            </div>
+            <div class="flex justify-between font-bold text-amber-400 pt-1">
+              <span>Table Subtotal:</span>
+              <span class="inline-flex items-center gap-1.5">
+                <span id="modal-table-fee">₹0</span>
+                <button type="button" onclick="promptEditCurrentModalAmount()" title="Edit Table Subtotal" class="text-xs text-amber-400 hover:text-amber-300 bg-slate-900 border border-slate-700 px-1.5 py-0.5 rounded transition">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              </span>
+            </div>
+          </div>
+
+          <!-- Itemized Café Orders -->
+          <div class="py-2.5 border-b border-dashed border-slate-700">
+            <div class="flex justify-between font-bold text-slate-400 text-[10px] uppercase mb-1">
+              <span>Snacks / Beverages</span>
+              <span>Price</span>
+            </div>
+            <div id="modal-cafe-items-list" class="space-y-1 text-slate-300">
+              <!-- Item list injected -->
+            </div>
+            <div class="flex justify-between font-bold text-amber-400 pt-1.5 mt-1 border-t border-slate-800/80">
+              <span>Café Subtotal:</span>
+              <span id="modal-cafe-total">₹0</span>
+            </div>
+          </div>
+
+          <!-- Taxes & Discount Controls -->
+          <div class="py-2 space-y-1.5 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400 flex items-center gap-1.5">
+                <input type="checkbox" id="tax-toggle" onchange="recalculateModalTotal()" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0">
+                <span>Apply GST (5%)</span>
+              </span>
+              <span id="modal-tax-amount" class="text-slate-300">₹0</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">Discount:</span>
+              <div class="flex items-center gap-1">
+                <span class="text-slate-500">₹</span>
+                <input type="number" id="modal-discount-input" min="0" value="0" oninput="recalculateModalTotal()" class="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right text-xs text-white outline-none">
+              </div>
+            </div>
+            <div class="border-t border-dashed border-slate-700 pt-2 flex justify-between items-center text-sm font-extrabold text-white">
+              <span>NET PAYABLE:</span>
+              <span id="modal-grand-total" class="text-base text-amber-400 font-mono">₹0</span>
+            </div>
+          </div>
+
+          <div class="text-center pt-2 border-t border-dashed border-slate-800 text-[10px] text-slate-500">
+            Thank you for playing with us! Visit again.
+          </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
+          <label class="block text-slate-400 font-semibold mb-2">Payment Method:</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer text-slate-300 hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-400/10 has-[:checked]:text-amber-400">
+              <input type="radio" name="payment-method" value="Cash" checked class="hidden">
+              <i class="fa-solid fa-money-bill-wave"></i> Cash
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer text-slate-300 hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-400/10 has-[:checked]:text-amber-400">
+              <input type="radio" name="payment-method" value="UPI / QR" class="hidden">
+              <i class="fa-solid fa-qrcode"></i> UPI / QR
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer text-slate-300 hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-400/10 has-[:checked]:text-amber-400">
+              <input type="radio" name="payment-method" value="Card" class="hidden">
+              <i class="fa-solid fa-credit-card"></i> Card
+              
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 border-t border-slate-800 flex flex-wrap gap-2">
+        <button onclick="downloadTextFileReceipt()" class="px-3.5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-file-lines text-amber-400"></i> Text File
+        </button>
+        <button onclick="closeCheckoutModal()" class="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium text-xs transition">
+          Cancel
+        </button>
+        <button onclick="settleAndFreeSlot()" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-slate-950 font-black text-xs transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-circle-check"></i> Settle & Clear 
+        </button>
+        <button onclick="UNPAID()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-98 text-white font-black text-xs transition shadow-lg shadow-rose-600/20 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left"></i> Unpaid (Due)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD / EDIT STATION MODAL -->
+  <div id="station-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2" id="station-modal-title">
+          <i class="fa-solid fa-plus-circle text-amber-400"></i> Add New Table / Console
+        </h3>
+        <button onclick="closeStationModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="station-form" onsubmit="saveStation(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="edit-station-id" value="">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Station Name</label>
+          <input type="text" id="station-name-input" required placeholder="e.g. Riley Aristocrat Snooker 12x6" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Category Type</label>
+            <select id="station-type-input" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+              <option value="snooker">Snooker</option>
+              <option value="pool">8-Ball Pool</option>
+              <option value="ps5">PlayStation 5</option>
+              <option value="pc">Gaming PC</option>
+              <option value="wheel">Steering Wheel</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Hourly Rate Tariff (₹)</label>
+            <input type="number" id="station-rate-input" min="10" required placeholder="180" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+          <button type="button" onclick="closeStationModal()" class="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold shadow-md shadow-amber-400/20">
+            Save Station
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- START SESSION WITH CUSTOMER NAME MODAL -->
+  <div id="start-session-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-amber-400"></i> Start Match Session
+        </h3>
+        <button onclick="closeStartSessionModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="start-session-form" onsubmit="confirmStartSession(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="start-session-station-id" value="">
+        <div>
+          <p class="text-slate-400 text-xs mb-3">Starting session on <span id="start-session-station-name" class="text-amber-400 font-bold"></span></p>
+          <label class="block text-slate-300 font-semibold mb-1.5">Customer Name (Optional)</label>
+          <input type="text" id="customer-name-input" placeholder="e.g. Rahul Sharma / Table Guest" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400 mb-3">
+
+          <label class="block text-slate-300 font-semibold mb-1.5">Mobile Number (Optional)</label>
+          <input type="tel" id="customer-mobile-input" inputmode="tel" autocomplete="tel" placeholder="e.g. +91 98765 43210" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400 mb-3">
+
+          <label class="block text-slate-300 font-semibold mb-1.5">Select Game Mode</label>
+          <select id="game-mode-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400 mb-3">
+            <!-- Dynamically populated per table type -->
+          </select>
+
+          <!-- PS5 Player Count Selector (Shown dynamically if PS5 station) -->
+          <div id="ps5-player-selector-container" class="hidden mb-3">
+            <label class="block text-slate-300 font-semibold mb-1.5">Number of Players (PS5 Tiered Pricing)</label>
+            <select id="ps5-player-count-select" onchange="updateStartSlotPricePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+              <option value="1">1 Player (30m: ₹60 | 1hr: ₹100)</option>
+              <option value="2" selected>2 Players (30m: ₹100 | 1hr: ₹150)</option>
+              <option value="3">3 Players (30m: ₹130 | 1hr: ₹200)</option>
+              <option value="4">4 Players (30m: ₹150 | 1hr: ₹250)</option>
+            </select>
+          </div>
+
+          <label class="block text-slate-300 font-semibold mb-1.5">Slot Duration (Fixed Price Model)</label>
+          <select id="frame-limit-select" onchange="updateStartSlotPricePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+            <option value="1500">25 Minutes (Frame - ₹70 Fixed)</option>
+            <option value="1800" selected>30 Minutes (Half Hour Fixed Slot)</option>
+            <option value="3600">60 Minutes (1 Hour Fixed Slot)</option>
+            <option value="900">15 Minutes (Quarter Hour Fixed Slot)</option>
+            <option value="2700">45 Minutes (Extended Slot)</option>
+            <option value="0">Unlimited / Open Running</option>
+          </select>
+
+          <!-- Fixed Price Preview Box -->
+          <div class="mt-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold">Fixed Slot Price:</span>
+            <span id="start-session-price-preview" class="text-amber-400 font-bold font-mono text-sm">₹0</span>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
+          <button type="button" onclick="closeStartSessionModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md shadow-emerald-500/20">
+            Start Session
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- CUSTOM EDIT PRICE MODAL (Replaces browser prompt) -->
+  <div id="edit-price-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-amber-400"></i> Edit Price Amount
+        </h3>
+        <button onclick="closeEditPriceModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="text-slate-400 mb-3" id="edit-price-desc">Enter revised price for this session:</p>
+      <div class="mb-4">
+        <label class="block text-slate-300 font-semibold mb-1">New Amount (₹)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-2.5 text-slate-500 font-bold">₹</span>
+          <input type="number" id="edit-price-input" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-mono text-amber-400 font-bold outline-none focus:border-amber-400">
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeEditPriceModal()" class="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium transition">
+          Cancel
+        </button>
+        <button type="button" onclick="confirmEditPrice()" class="flex-1 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition shadow-md shadow-amber-400/20">
+          Save Price
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANCEL SESSION CONFIRMATION MODAL (Replaces window.confirm) -->
+  <div id="cancel-session-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-rose-900/60 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative text-xs text-center">
+      <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-center text-xl mx-auto mb-3">
+        <i class="fa-solid fa-ban"></i>
+      </div>
+      <h3 class="text-base font-bold text-white mb-1">Cancel Session?</h3>
+      <p class="text-slate-400 mb-4" id="cancel-modal-desc">Are you sure you want to cancel the match on this table? Running time and unpaid orders will be discarded.</p>
+      <div class="flex gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeCancelModal()" class="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium transition">
+          Keep Match
+        </button>
+        <button type="button" onclick="confirmCancelSessionAction()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black transition shadow-lg shadow-rose-600/20">
+          Yes, Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT CAFE ITEM MODAL -->
+  <div id="cafe-item-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2" id="cafe-item-modal-title">
+          <i class="fa-solid fa-burger text-amber-400"></i> Add Menu Item
+        </h3>
+        <button onclick="closeCafeItemModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="cafe-item-form" onsubmit="saveCafeItem(event)" class="space-y-3">
+        <input type="hidden" id="cafe-item-id" value="">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Item Name</label>
+          <input type="text" id="cafe-item-name" required placeholder="e.g. Cheese Maggi / Cold Drink" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Price (₹)</label>
+            <input type="number" id="cafe-item-price" min="1" step="1" required placeholder="80" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-amber-400 font-bold font-mono outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Category</label>
+            <select id="cafe-item-category" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+              <option value="snacks">Snacks</option>
+              <option value="beverage">Beverage</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Icon Style</label>
+          <select id="cafe-item-icon" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+            <option value="fa-bowl-food">Bowl / Food (fa-bowl-food)</option>
+            <option value="fa-bread-slice">Sandwich / Bread (fa-bread-slice)</option>
+            <option value="fa-pizza-slice">Pizza (fa-pizza-slice)</option>
+            <option value="fa-burger">Burger (fa-burger)</option>
+            <option value="fa-mug-hot">Chai / Coffee (fa-mug-hot)</option>
+            <option value="fa-bottle-water">Cold Drink / Shake (fa-bottle-water)</option>
+            <option value="fa-glass-water">Water (fa-glass-water)</option>
+            <option value="fa-bolt">Energy Drink (fa-bolt)</option>
+          </select>
+        </div>
+        <div class="pt-3 border-t border-slate-800 flex justify-between gap-2">
+          <button type="button" id="delete-cafe-item-btn" onclick="deleteCurrentCafeItem()" class="hidden px-3 py-2 rounded-xl bg-rose-950 border border-rose-800 text-rose-300 hover:bg-rose-900 font-semibold transition">
+            Delete
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeCafeItemModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium transition">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition shadow-md shadow-amber-400/20">
+              Save Item
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ALL-TIME REVENUE & EXPENDITURE ADJUSTMENT MODAL -->
+  <div id="alltime-adjust-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl relative text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-vault text-emerald-400"></i> All-Time Revenue & Expense Ledger
+          </h3>
+          <p class="text-[11px] text-slate-400">Add income adjustments or deduct business expenses from all-time balance.</p>
+        </div>
+        <button onclick="closeAllTimeAdjustModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Live Balance Overview -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 font-mono space-y-1.5 mb-4">
+        <div class="flex justify-between text-slate-400">
+          <span>Gross Recorded (Shifts):</span>
+          <span id="adj-gross-shift-rev" class="text-slate-300">₹0</span>
+        </div>
+        <div class="flex justify-between text-rose-400">
+          <span>Total Expenses Deducted:</span>
+          <span id="adj-total-expenses" class="font-bold">-₹0</span>
+        </div>
+        <div class="flex justify-between text-emerald-400">
+          <span>Total Manual Additions:</span>
+          <span id="adj-total-additions" class="font-bold">+₹0</span>
+        </div>
+        <div class="border-t border-slate-800/80 pt-1.5 flex justify-between text-sm font-bold text-amber-400">
+          <span>Current Net All-Time:</span>
+          <span id="adj-current-net-balance" class="text-emerald-400 text-base">₹0</span>
+        </div>
+      </div>
+
+      <!-- Action Mode Selector -->
+      <div class="mb-4">
+        <label class="block text-slate-300 font-semibold mb-1.5">Action Type:</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btn-mode-deduct" onclick="setAdjustMode('deduct')" class="py-2 rounded-xl font-bold text-xs border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-minus-circle"></i> Log Expense (Deduct)
+          </button>
+          <button type="button" id="btn-mode-add" onclick="setAdjustMode('add')" class="py-2 rounded-xl font-bold text-xs border border-slate-700 bg-slate-950 text-slate-400 hover:text-emerald-300 flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-plus-circle"></i> Add Funds / Inflow
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Inputs -->
+      <form id="alltime-adjust-form" onsubmit="submitAllTimeAdjustment(event)" class="space-y-3">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1" id="adj-title-label">Expense Reason / Purchase Title</label>
+          <input type="text" id="adj-title-input" required placeholder="e.g. Snooker Table Cloth & Cue Maintenance / Shop Rent / Electricity" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Amount (₹)</label>
+            <input type="number" id="adj-amount-input" min="1" step="1" required placeholder="500" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-amber-400 font-bold font-mono outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Category</label>
+            <select id="adj-category-input" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+              <option value="Maintenance">Equipment / Table Maintenance</option>
+              <option value="Rent/Bills">Rent & Utilities</option>
+              <option value="Snacks Restock">Café Stock Purchase</option>
+              <option value="Staff/Salary">Staff / Wages</option>
+              <option value="Other">Other Business Expense</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
+          <button type="button" onclick="closeAllTimeAdjustModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium">
+            Cancel
+          </button>
+          <button type="submit" id="adj-submit-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition shadow-md shadow-rose-600/20">
+            Deduct Expense
+          </button>
+        </div>
+      </form>
+
+      <!-- History of Adjustments & Expenses -->
+      <div class="mt-4 pt-3 border-t border-slate-800">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Recent Adjustments & Expenses</span>
+          <button type="button" onclick="clearAdjustmentHistory()" class="text-[10px] text-slate-500 hover:text-rose-400 transition">Clear History</button>
+        </div>
+        <div id="adj-history-list" class="space-y-1.5 max-h-36 overflow-y-auto custom-scroll pr-1">
+          <!-- Dynamic logs -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 30-MIN TIME LIMIT / FRAME FINISHED MODAL -->
+  <div id="time-up-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-400/80 w-full max-w-md rounded-2xl p-6 shadow-2xl relative text-center animate-bounce-short">
+      <div class="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/40 text-amber-400 flex items-center justify-center text-3xl mx-auto mb-4">
+        <i class="fa-solid fa-hourglass-end animate-spin"></i>
+      </div>
+      <span class="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
+        TIME'S UP &bull; 30 MIN FRAME COMPLETE
+      </span>
+      <h3 class="text-xl font-black text-white mt-3" id="time-up-station-name">Table Session Ended</h3>
+      <p class="text-xs text-slate-300 mt-2">
+        Player: <span id="time-up-customer-name" class="font-bold text-amber-400">--</span> &bull; 
+        Game: <span id="time-up-game-mode" class="font-bold text-slate-200">--</span>
+      </p>
+      <div class="bg-slate-950 rounded-xl p-4 my-4 border border-slate-800 text-xs font-mono text-left space-y-1">
+        <div class="flex justify-between text-slate-400">
+          <span>Frame Duration:</span>
+          <span id="time-up-duration" class="font-bold text-emerald-400">30:00</span>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span>Table Charge:</span>
+          <span id="time-up-table-cost" class="font-bold">₹0</span>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span>Café Charges:</span>
+          <span id="time-up-cafe-cost" class="font-bold">₹0</span>
+        </div>
+        <div class="flex justify-between border-t border-slate-800 pt-2 text-sm font-extrabold text-amber-400">
+          <span>Total Payable:</span>
+          <span class="inline-flex items-center gap-2">
+            <span id="time-up-total-cost">₹0</span>
+            <button onclick="promptEditAmount(timeUpStationId)" title="Edit Bill Amount" class="text-xs text-amber-400/80 hover:text-amber-300 p-1 rounded bg-slate-800/80 hover:bg-slate-700 transition">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+          </span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="extendSessionTime()" class="flex-1 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-200 font-bold text-xs transition">
+          +15 Min Extra
+        </button>
+        <button onclick="checkoutFromTimeUp()" class="flex-1 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-400/20">
+          Proceed to Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD ANOTHER GAME / EARLY FINISH MODAL -->
+  <div id="add-next-game-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-amber-400"></i> Add Another Game / Frame
+        </h3>
+        <button onclick="closeAddNextGameModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="add-next-game-form" onsubmit="confirmAddNextGame(event)" class="space-y-3">
+        <input type="hidden" id="next-game-station-id" value="">
+
+        <!-- Current / Completed Frame Summary Box -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono space-y-1.5">
+          <div class="flex justify-between text-slate-400">
+            <span>Concluded Game:</span>
+            <span id="prev-game-name" class="text-white font-bold">--</span>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Duration Played:</span>
+            <span id="prev-game-duration" class="text-emerald-400 font-bold">00:00:00</span>
+          </div>
+          <div class="flex justify-between items-center border-t border-slate-800/80 pt-1.5 font-sans">
+            <span class="text-slate-300 font-semibold">Charge for Frame (₹):</span>
+            <div class="relative w-24">
+              <span class="absolute left-2.5 top-1.5 text-slate-500 font-bold">₹</span>
+              <input type="number" id="prev-game-cost" min="0" step="1" required class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs font-mono text-amber-400 font-bold outline-none focus:border-amber-400 text-right">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Select Next Game / Variant</label>
+          <select id="next-game-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+            <!-- Populated via openAddNextGameModal -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Next Frame Duration / Slot</label>
+          <select id="next-game-duration-select" onchange="updateNextGameSlotPricePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-100 outline-none focus:border-amber-400">
+            <option value="1500" selected>25 Minutes (Frame - ₹70 Fixed)</option>
+            <option value="1800">30 Minutes (Half Hour Fixed Slot)</option>
+            <option value="3600">60 Minutes (1 Hour Fixed Slot)</option>
+            <option value="900">15 Minutes (Short Slot)</option>
+            <option value="0">Unlimited / Open Running</option>
+          </select>
+        </div>
+
+        <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center font-mono">
+          <span class="text-slate-400 font-sans font-semibold">Next Slot Tariff:</span>
+          <span id="next-game-price-preview" class="text-amber-400 font-bold">₹70 (Fixed)</span>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
+          <button type="button" onclick="closeAddNextGameModal()" class="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition shadow-md shadow-amber-400/20 flex items-center gap-1.5">
+            <i class="fa-solid fa-plus-circle"></i> Lock & Start Next
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EXTEND TIME MODAL -->
+  <div id="extend-time-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-clock text-sky-400"></i> Extend Session Time
+        </h3>
+        <button onclick="closeExtendTimeModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="extend-station-id" value="">
+      <p class="text-slate-400 mb-3" id="extend-station-desc">Add playing time to table</p>
+
+      <!-- Quick time addition chips -->
+      <label class="block text-slate-300 font-semibold mb-2">Quick Add Minutes:</label>
+      <div class="grid grid-cols-4 gap-2 mb-4">
+        <button type="button" onclick="quickExtendTime(10)" class="py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-sky-400 text-slate-200 font-bold transition">+10m</button>
+        <button type="button" onclick="quickExtendTime(15)" class="py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-sky-400 text-slate-200 font-bold transition">+15m</button>
+        <button type="button" onclick="quickExtendTime(30)" class="py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-sky-400 text-slate-200 font-bold transition">+30m</button>
+        <button type="button" onclick="quickExtendTime(60)" class="py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-sky-400 text-slate-200 font-bold transition">+1 hr</button>
+      </div>
+
+      <!-- Custom minute input -->
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">Or Enter Custom Minutes</label>
+        <div class="flex gap-2">
+          <input type="number" id="extend-custom-minutes" min="1" step="1" placeholder="e.g. 20" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono outline-none focus:border-sky-400">
+          <button type="button" onclick="confirmCustomExtendTime()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded-xl transition shadow-md shadow-sky-500/20">
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-3 mt-4 border-t border-slate-800 flex justify-end">
+        <button type="button" onclick="closeExtendTimeModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTLE PENDING / UNPAID INVOICE MODAL -->
+  <div id="settle-pending-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-hand-holding-dollar text-emerald-400"></i>           <span id="pending-modal-title">Clear Due Payment</span>
+        </h3>
+        <button onclick="closePendingModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5 font-mono">
+          <div class="flex justify-between text-slate-400">
+            <span>Invoice:</span>
+            <span id="pending-modal-inv" class="text-amber-400 font-bold">--</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Customer:</span>
+            <span id="pending-modal-cust" class="font-bold text-white">--</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Station:</span>
+            <span id="pending-modal-station" class="text-slate-300">--</span>
+          </div>
+          <div class="flex justify-between text-slate-300 border-t border-slate-800/80 pt-1.5 font-sans font-bold">
+            <span id="pending-modal-amount-label" class="text-rose-400">Amount Due:</span>
+            <span id="pending-modal-amount" class="text-emerald-400 font-mono text-base">₹0</span>
+          </div>
+        </div>
+
+        <div>
+          <label id="pending-modal-method-label" class="block text-slate-300 font-semibold mb-2">Select Payment Method Received:</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer text-slate-300 hover:border-emerald-400 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-500/10 has-[:checked]:text-emerald-400 text-xs">
+              <input type="radio" name="pending-payment-method" value="Cash" checked class="hidden">
+              <i class="fa-solid fa-money-bill-wave"></i> Cash
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer text-slate-300 hover:border-emerald-400 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-500/10 has-[:checked]:text-emerald-400 text-xs">
+              <input type="radio" name="pending-payment-method" value="UPI / QR" class="hidden">
+              <i class="fa-solid fa-qrcode"></i> UPI
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer text-slate-300 hover:border-emerald-400 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-500/10 has-[:checked]:text-emerald-400 text-xs">
+              <input type="radio" name="pending-payment-method" value="Card" class="hidden">
+              <i class="fa-solid fa-credit-card"></i> Card
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex gap-2">
+          <button type="button" onclick="closePendingModal()" class="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium">
+            Cancel
+          </button>
+          <button type="button" onclick="confirmSettlePending()" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-check"></i> <span id="pending-modal-submit-label">Collect & Mark Paid</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSE SHOP / SHIFT END MODAL -->
+  <div id="close-shop-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl relative text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div>
+          <h3 class="text-base font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-store-slash text-rose-500"></i> Close Shop & End Shift
+          </h3>
+          <p class="text-[11px] text-slate-400">Only closing the shop will finalize and reset the current shift revenue.</p>
+        </div>
+        <button onclick="closeCloseShopModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Warning if stations are active -->
+      <div id="close-shop-warning" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 p-3 rounded-xl mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
+        <span>Some stations are still in play. Please settle or cancel them before closing the shift.</span>
+      </div>
+
+      <!-- Shift Revenue Breakdown -->
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 font-mono mb-4">
+        <div class="flex justify-between text-slate-400">
+          <span>Shift Started:</span>
+          <span id="cs-shift-start" class="text-slate-200">--</span>
+        </div>
+        <div class="flex justify-between text-slate-400">
+          <span>Total Transactions:</span>
+          <span id="cs-total-txns" class="font-bold text-white">0</span>
+        </div>
+        <div class="border-t border-slate-800/80 pt-2 flex justify-between text-slate-300">
+          <span>Cash Collected:</span>
+          <span id="cs-cash-total" class="font-bold text-emerald-400">₹0</span>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span>UPI / QR Collected:</span>
+          <span id="cs-upi-total" class="font-bold text-sky-400">₹0</span>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span>Card Collected:</span>
+          <span id="cs-card-total" class="font-bold text-indigo-400">₹0</span>
+        </div>
+        <div class="flex justify-between text-rose-400">
+          <span>Pending / Unpaid Due:</span>
+          <span id="cs-unpaid-total" class="font-bold">₹0</span>
+        </div>
+        <div class="border-t border-slate-800 pt-2 flex justify-between items-center text-sm font-black text-amber-400">
+          <span>TOTAL PAID REVENUE:</span>
+          <span id="cs-grand-total" class="text-base text-amber-400">₹0</span>
+        </div>
+      </div>
+
+      <div class="text-[11px] text-slate-400 mb-4 bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+        <i class="fa-solid fa-circle-info text-amber-400 mr-1"></i>
+        Clicking <b>"Confirm & Close Shop"</b> archives today's shift log and resets the revenue counter for the next shift. It does <b>not</b> reset automatically at midnight.
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <button onclick="downloadDayClosingReport()" class="px-3.5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-200 font-bold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down text-amber-400"></i> Download Summary
+        </button>
+        <button onclick="closeCloseShopModal()" class="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-medium transition">
+          Cancel
+        </button>
+        <button onclick="confirmCloseShop()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black transition shadow-lg shadow-rose-600/20 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-power-off"></i> Confirm & Close Shop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // Initial Seed Data with available games per table
+    const defaultStations = [
+      { 
+        id: 1, 
+        name: "Star Snooker Table (12x6)", 
+        type: "snooker", 
+        hourlyRate: 240, 
+        active: false, 
+        paused: false, 
+        currentGame: "Snooker",
+        availableGames: ["Snooker", "Century", "Cricket", "SAFAL", "RD"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 2, 
+        name: "Snooker Table (12x6)", 
+        type: "snooker", 
+        hourlyRate: 200, 
+        active: false, 
+        paused: false, 
+        currentGame: "Snooker",
+        availableGames: ["Snooker", "Century", "Cricket", "SAFAL", "RD"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 3, 
+        name: "Club Snooker Table 1 (10x5)", 
+        type: "snooker", 
+        hourlyRate: 150, 
+        frame25Rate: 70,
+        active: false, 
+        paused: false, 
+        currentGame: "Snooker",
+        availableGames: ["Snooker", "Century", "Cricket","SAFAL", "RD" ],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 4, 
+        name: "Club Snooker Table 2 (10x5)", 
+        type: "snooker", 
+        hourlyRate: 150, 
+        frame25Rate: 70,
+        active: false, 
+        paused: false, 
+        currentGame: "Snooker",
+        availableGames: ["Snooker", "Century", "Cricket","SAFAL", "RD"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 5, 
+        name: "English 8-Ball Pool Table 1", 
+        type: "pool", 
+        hourlyRate: 140, 
+        frame25Rate: 70,
+        active: false, 
+        paused: false, 
+        currentGame: "8-Ball Pool",
+        availableGames: ["8-Ball Pool", "9-Ball Pool"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 6, 
+        name: "English 8-Ball Pool Table 2", 
+        type: "pool", 
+        hourlyRate: 140, 
+        frame25Rate: 70,
+        active: false, 
+        paused: false, 
+        currentGame: "8-Ball Pool",
+        availableGames: ["8-Ball Pool", "9-Ball Pool"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      
+      { 
+        id: 7, 
+        name: "PlayStation 5 Console #1 (4K VIP)", 
+        type: "ps5", 
+        hourlyRate: 100,
+        halfHourlyRate: 60,
+        playerCount: 1,
+        active: false, 
+        paused: false, 
+        currentGame: "FIFA / FC 25",
+        availableGames: ["FIFA / FC 25", "Cricket 24", "WWE 2K24", "GTA V", "Mortal Kombat 1"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 8, 
+        name: "PlayStation 5 Console #2 (VIP)", 
+        type: "ps5", 
+        hourlyRate: 100,
+        halfHourlyRate: 60,
+        playerCount: 1,
+        active: false, 
+        paused: false, 
+        currentGame: "Cricket 24",
+        availableGames: ["Cricket 24", "FIFA / FC 25", "Tekken 8", "Spider-Man 2", "Need for Speed"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 9, 
+        name: "Alienware RTX Gaming PC #1", 
+        type: "pc", 
+        hourlyRate: 120,
+        halfHourlyRate: 80,
+        active: false, 
+        paused: false, 
+        currentGame: "Valorant",
+        availableGames: ["Valorant", "CS:GO 2", "PUBG PC", "Dota 2", "Apex Legends"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      },
+      { 
+        id: 10, 
+        name: "STREEING WHEEL #1", 
+        type: "wheel", 
+        hourlyRate: 200,
+        halfHourlyRate: 120,
+        active: false, 
+        paused: false, 
+        currentGame: "Forza Horizon 5",
+        availableGames: ["Forza Horizon 5", "F1 23", "Assetto Corsa", "Dirt Rally 2.0"],
+        startTime: null, 
+        elapsedSec: 0, 
+        cafeBill: 0, 
+        items: [] 
+      }
+    ];
+
+    const cafeMenu = [
+      { id: 101, name: "Cold Coffee Shake", price: 80, category: "beverage", icon: "fa-bottle-water" },
+      { id: 102, name: "Grilled Veg Cheese Sandwich", price: 100, category: "snacks", icon: "fa-bread-slice" },
+      { id: 103, name: "Peri-Peri French Fries", price: 90, category: "snacks", icon: "fa-bowl-food" },
+      { id: 104, name: "Red Bull Energy Drink", price: 130, category: "beverage", icon: "fa-bolt" },
+      { id: 105, name: "Masala Chai / Cutting Tea", price: 25, category: "beverage", icon: "fa-mug-hot" },
+      { id: 106, name: "Chilled Mineral Water (1L)", price: 20, category: "beverage", icon: "fa-glass-water" },
+      { id: 107, name: "Veg Pizza", price: 120, category: "snacks", icon: "fa-pizza-slice" },
+      { id: 108, name: "Margherita Pizza", price: 100, category: "snacks", icon: "fa-pizza-slice" },
+      { id: 109, name: "Chilled Mineral Water (500ml)", price: 10, category: "beverage", icon: "fa-glass-water" }
+    ];
+
+    // Persisted Café menu or default fallback
+    let currentCafeMenu = JSON.parse(localStorage.getItem('gz_cafe_menu')) || cafeMenu;
+
+    function saveCafeMenuToStorage() {
+      localStorage.setItem('gz_cafe_menu', JSON.stringify(currentCafeMenu));
+    }
+
+    // PS5 Pricing matrix for 30 min and 60 min intervals
+    const ps5Rates = {
+      1: { halfHour: 60, fullHour: 100 },
+      2: { halfHour: 100, fullHour: 150 },
+      3: { halfHour: 130, fullHour: 200 },
+      4: { halfHour: 150, fullHour: 250 }
+    };
+
+    function calculateStationTableCost(station) {
+      // 1. If manual override was entered via the Edit button, always honor it
+      if (station.manualOverridePrice !== undefined && station.manualOverridePrice !== null) {
+        return station.manualOverridePrice;
+      }
+
+      // 2. If a fixed price was locked in at match start, use the exact fixed fee
+      if (station.fixedPrice !== undefined && station.fixedPrice !== null) {
+        return station.fixedPrice;
+      }
+
+      const billableSeconds = Math.max(station.elapsedSec, 60);
+
+      // Fallback for unlimited / open sessions
+      if (station.type === 'ps5') {
+        const players = station.playerCount || 1;
+        const tier = ps5Rates[players] || ps5Rates[1];
+        if (billableSeconds <= 1800) {
+          return tier.halfHour;
+        } else {
+          const extraSec = billableSeconds - 1800;
+          const additionalHourlyRate = tier.fullHour - tier.halfHour;
+          return Math.round(tier.halfHour + (extraSec / 1800) * additionalHourlyRate);
+        }
+      }
+
+      // Explicit halfHourlyRate check for PC / other stations
+      if (station.halfHourlyRate && billableSeconds <= 1800) {
+        return station.halfHourlyRate;
+      }
+
+      // Standard hourly fallback
+      const hours = billableSeconds / 3600;
+      return Math.round(hours * station.hourlyRate);
+    }
+
+    // Local Storage or Defaults
+    let stations = JSON.parse(localStorage.getItem('gz_stations')) || defaultStations;
+    let settledLogs = JSON.parse(localStorage.getItem('gz_settled_logs')) || [];
+    let shiftStartTime = localStorage.getItem('gz_shift_start') || new Date().toLocaleString();
+    if (!localStorage.getItem('gz_shift_start')) {
+      localStorage.setItem('gz_shift_start', shiftStartTime);
+    }
+    let cafeCart = [];
+    let currentCheckoutStation = null;
+    let timeUpStationId = null;
+    let pendingSettleIndex = null;
+    let isEditingLogPaymentMethod = false;
+    let activeFilter = 'all';
+    let targetEditStationId = null;
+    let isEditingCheckoutModalPrice = false;
+    let targetCancelStationId = null;
+    let currentAdjustMode = 'deduct'; // 'deduct' or 'add'
+
+    // Settled History Date Filter State
+    let activeDateFilter = 'today';
+    let selectedDateCursor = new Date();
+    let currentFilteredLogs = [];
+
+    // Helper to get normalized Date String (YYYY-MM-DD) from a log entry
+    function parseLogISODate(log) {
+      if (log.isoDate) return log.isoDate;
+      if (log.date) {
+        const parts = log.date.split('/');
+        if (parts.length === 3) {
+          // Format could be MM/DD/YYYY or DD/MM/YYYY
+          const d = new Date(log.date);
+          if (!isNaN(d.getTime())) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          }
+        }
+      }
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // Combine current shift logs and all archived shift logs from local storage
+    function getAllCombinedLogs() {
+      const pastShifts = JSON.parse(localStorage.getItem('gz_past_shifts') || '[]');
+      let combined = [...settledLogs];
+      pastShifts.forEach(shift => {
+        if (shift.logs && Array.isArray(shift.logs)) {
+          combined.push(...shift.logs);
+        }
+      });
+      // Deduplicate invoices if any overlap
+      const seen = new Set();
+      return combined.filter(l => {
+        const id = l.invoice || (l.stationName + l.timestamp + l.date);
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+    }
+
+    function formatISODate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function setDateFilter(filterType, btnEl) {
+      activeDateFilter = filterType;
+      document.querySelectorAll('.date-chip').forEach(b => {
+        b.classList.remove('bg-amber-400', 'text-slate-950', 'font-bold');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      if (btnEl) {
+        btnEl.classList.add('bg-amber-400', 'text-slate-950', 'font-bold');
+        btnEl.classList.remove('bg-slate-800', 'text-slate-300');
+      }
+
+      const container = document.getElementById('filter-controls-container');
+      const monthWrapper = document.getElementById('month-picker-wrapper');
+      const rangeWrapper = document.getElementById('range-picker-wrapper');
+
+      if (filterType === 'select_month') {
+        container.classList.remove('hidden');
+        monthWrapper.classList.remove('hidden');
+        rangeWrapper.classList.add('hidden');
+        const now = new Date();
+        document.getElementById('filter-month-input').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      } else if (filterType === 'custom') {
+        container.classList.remove('hidden');
+        monthWrapper.classList.add('hidden');
+        rangeWrapper.classList.remove('hidden');
+        const todayStr = formatISODate(new Date());
+        document.getElementById('filter-from-date').value = todayStr;
+        document.getElementById('filter-to-date').value = todayStr;
+      } else {
+        monthWrapper.classList.add('hidden');
+        rangeWrapper.classList.add('hidden');
+        if (filterType === 'day_cursor') {
+          container.classList.remove('hidden');
+        } else {
+          container.classList.add('hidden');
+        }
+      }
+
+      if (filterType === 'today') {
+        selectedDateCursor = new Date();
+      } else if (filterType === 'yesterday') {
+        const y = new Date();
+        y.setDate(y.getDate() - 1);
+        selectedDateCursor = y;
+      }
+
+      applyDateFilter();
+    }
+
+    function stepDay(offset) {
+      selectedDateCursor.setDate(selectedDateCursor.getDate() + offset);
+      activeDateFilter = 'day_cursor';
+
+      document.querySelectorAll('.date-chip').forEach(b => {
+        b.classList.remove('bg-amber-400', 'text-slate-950', 'font-bold');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+
+      const container = document.getElementById('filter-controls-container');
+      container.classList.remove('hidden');
+      document.getElementById('month-picker-wrapper').classList.add('hidden');
+      document.getElementById('range-picker-wrapper').classList.add('hidden');
+
+      applyDateFilter();
+    }
+
+    function applyDateFilter() {
+      const allLogs = getAllCombinedLogs();
+      const todayStr = formatISODate(new Date());
+      let filtered = [];
+      let label = '';
+
+      if (activeDateFilter === 'today') {
+        filtered = allLogs.filter(l => parseLogISODate(l) === todayStr);
+        label = `Showing Today (${todayStr})`;
+      } else if (activeDateFilter === 'yesterday') {
+        const y = new Date();
+        y.setDate(y.getDate() - 1);
+        const yStr = formatISODate(y);
+        filtered = allLogs.filter(l => parseLogISODate(l) === yStr);
+        label = `Showing Yesterday (${yStr})`;
+      } else if (activeDateFilter === 'day_cursor') {
+        const curStr = formatISODate(selectedDateCursor);
+        filtered = allLogs.filter(l => parseLogISODate(l) === curStr);
+        label = `Viewing Day: ${selectedDateCursor.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
+      } else if (activeDateFilter === 'this_month') {
+        const curMonthPrefix = todayStr.slice(0, 7); // YYYY-MM
+        filtered = allLogs.filter(l => parseLogISODate(l).startsWith(curMonthPrefix));
+        label = `Showing Entire Month (${curMonthPrefix})`;
+      } else if (activeDateFilter === 'select_month') {
+        const chosenMonth = document.getElementById('filter-month-input').value;
+        if (chosenMonth) {
+          filtered = allLogs.filter(l => parseLogISODate(l).startsWith(chosenMonth));
+          label = `Showing Month: ${chosenMonth}`;
+        } else {
+          filtered = allLogs;
+        }
+      } else if (activeDateFilter === 'custom') {
+        const fromDate = document.getElementById('filter-from-date').value;
+        const toDate = document.getElementById('filter-to-date').value;
+        if (fromDate && toDate) {
+          filtered = allLogs.filter(l => {
+            const lDate = parseLogISODate(l);
+            return lDate >= fromDate && lDate <= toDate;
+          });
+          label = `Custom Range: ${fromDate} to ${toDate}`;
+        } else {
+          filtered = allLogs;
+        }
+      } else if (activeDateFilter === 'all') {
+        filtered = allLogs;
+        label = 'Showing All Time Records';
+      }
+
+      currentFilteredLogs = filtered;
+      const lblEl = document.getElementById('active-filter-label');
+      if (lblEl) lblEl.innerText = label;
+
+      // Update filtered summary statistics
+      const totalAmount = filtered
+        .filter(l => !l.paymentMethod || !l.paymentMethod.toUpperCase().includes('UNPAID'))
+        .reduce((sum, item) => sum + (item.grandTotal || 0), 0);
+
+      const countEl = document.getElementById('filtered-count');
+      const revEl = document.getElementById('filtered-revenue');
+      if (countEl) countEl.innerText = filtered.length;
+      if (revEl) revEl.innerText = '₹' + totalAmount;
+
+      renderSettledLogs();
+    }
+
+    // Audio Chime / Buzzer for Time Up
+    function playBuzzer() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+      } catch (e) {
+        // AudioContext fallback
+      }
+    }
+
+    function triggerTimeUp(station) {
+      station.paused = true;
+      station.timeUpTriggered = true;
+      timeUpStationId = station.id;
+      playBuzzer();
+
+      const tableFee = calculateStationTableCost(station);
+      const total = tableFee + (station.cafeBill || 0);
+
+      document.getElementById('time-up-station-name').innerText = station.name;
+      document.getElementById('time-up-customer-name').innerText = station.customerName || 'Guest';
+      document.getElementById('time-up-game-mode').innerText = station.currentGame || 'Snooker Frame';
+      document.getElementById('time-up-duration').innerText = formatTime(station.elapsedSec);
+      document.getElementById('time-up-table-cost').innerText = '₹' + tableFee;
+      document.getElementById('time-up-cafe-cost').innerText = '₹' + (station.cafeBill || 0);
+      document.getElementById('time-up-total-cost').innerText = '₹' + total;
+
+      document.getElementById('time-up-modal').classList.remove('hidden');
+      saveStationsToStorage();
+      renderStations();
+    }
+
+    function checkoutFromTimeUp() {
+      const id = timeUpStationId;
+      document.getElementById('time-up-modal').classList.add('hidden');
+      if (id) {
+        openCheckout(id);
+      }
+    }
+
+    function extendSessionTime() {
+      const s = stations.find(x => x.id === timeUpStationId);
+      if (s) {
+        s.timeLimitSec = (s.timeLimitSec || 1800) + 900; // Add 15 minutes
+        s.paused = false;
+        s.timeUpTriggered = false;
+        saveStationsToStorage();
+        renderStations();
+        showToast(`Extended ${s.name} by 15 minutes!`, 'success');
+      }
+      document.getElementById('time-up-modal').classList.add('hidden');
+      timeUpStationId = null;
+    }
+
+    function saveStationsToStorage() {
+      localStorage.setItem('gz_stations', JSON.stringify(stations));
+    }
+
+    function saveLogsToStorage() {
+      localStorage.setItem('gz_settled_logs', JSON.stringify(settledLogs));
+    }
+
+    // Timer Loop (1 Second Tick)
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('live-clock').innerText = now.toLocaleTimeString();
+
+      let stateChanged = false;
+      stations.forEach(s => {
+        if (s.active && !s.paused) {
+          s.elapsedSec++;
+          stateChanged = true;
+
+          // Check if auto frame limit is reached
+          if (s.timeLimitSec && s.timeLimitSec > 0 && s.elapsedSec >= s.timeLimitSec && !s.timeUpTriggered) {
+            triggerTimeUp(s);
+          }
+
+          const timerEl = document.getElementById(`timer-${s.id}`);
+          const costEl = document.getElementById(`cost-${s.id}`);
+          if (timerEl) timerEl.innerText = formatTime(s.elapsedSec);
+          if (costEl) costEl.innerText = '₹' + calculateCurrentBill(s);
+        }
+      });
+      // Periodically persist timer seconds
+      if (stateChanged && now.getSeconds() % 5 === 0) {
+        saveStationsToStorage();
+      }
+    }, 1000);
+
+    function formatTime(seconds) {
+      const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(seconds % 60).padStart(2, '0');
+      return `${hrs}:${mins}:${secs}`;
+    }
+
+    function calculateCurrentBill(station) {
+      return calculateStationTableCost(station) + (station.cafeBill || 0);
+    }
+
+    // Toast Messenger (Replaces alerts)
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white border-emerald-500',
+        error: 'bg-red-600 text-white border-red-500',
+        info: 'bg-slate-800 text-amber-400 border-amber-500/40'
+      };
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl border flex items-center gap-2 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto ${colors[type] || colors.info}`;
+      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-bell'}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // Render Station Grid
+    function renderStations() {
+      const grid = document.getElementById('station-grid');
+      grid.innerHTML = '';
+
+      let occupied = 0;
+      stations.forEach(s => {
+        if (s.active) occupied++;
+        if (activeFilter !== 'all' && s.type !== activeFilter) return;
+
+        const card = document.createElement('div');
+        const isRunning = s.active && !s.paused;
+        const isPaused = s.active && s.paused;
+
+        card.className = `rounded-2xl border p-5 transition flex flex-col justify-between ${
+          isRunning 
+            ? 'bg-slate-900 border-amber-500/50 shadow-xl shadow-amber-500/5 pulse-running' 
+            : isPaused 
+            ? 'bg-slate-900 border-amber-500/20 shadow-md'
+            : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+        }`;
+
+        // Get icon according to type
+        let iconClass = 'fa-dice';
+        if (s.type === 'snooker') iconClass = 'fa-circle-dot text-emerald-400';
+        else if (s.type === 'pool') iconClass = 'fa-bowling-ball text-blue-400';
+        else if (s.type === 'ps5') iconClass = 'fa-gamepad text-indigo-400';
+        else if (s.type === 'pc') iconClass = 'fa-desktop text-purple-400';
+        else if (s.type === 'wheel') iconClass = 'fa-dharmachakra text-amber-400';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 ${
+                  isRunning 
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                    : isPaused 
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                    : 'bg-slate-800 text-slate-400 border border-slate-700/60'
+                }">
+                  <span class="w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-ping' : isPaused ? 'bg-amber-400' : 'bg-slate-500'}"></span>
+                  ${isRunning ? 'In Play' : isPaused ? 'Paused' : 'Available'}
+                </span>
+                <h3 class="text-base font-bold text-white mt-2">${s.name}</h3>
+                ${s.currentGame ? `
+                  <div class="text-[11px] text-amber-400 font-bold flex items-center gap-1 mt-0.5">
+                    <i class="fa-solid fa-trophy text-[10px]"></i> ${s.currentGame}
+                  </div>
+                ` : ''}
+                ${s.customerName ? `
+                  <div class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-1">
+                    <i class="fa-solid fa-user text-[10px]"></i> ${s.customerName}
+                  </div>
+                ` : ''}
+                <p class="text-xs text-slate-400 font-mono mt-0.5">${s.type === 'ps5' ? `PS5 Tier: ${s.playerCount || 1}P (₹${(ps5Rates[s.playerCount || 1] || ps5Rates[1]).halfHour}/30m, ₹${(ps5Rates[s.playerCount || 1] || ps5Rates[1]).fullHour}/1hr)` : `Tariff: ₹${s.hourlyRate}/hour`}</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center text-lg shadow-inner">
+                <i class="fa-solid ${iconClass}"></i>
+              </div>
+            </div>
+
+            <!-- Timer & Current Fee Box -->
+            <div class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex justify-between items-center font-mono">
+              <div>
+                <span class="text-[10px] text-slate-500 uppercase block font-sans">
+                  ${s.timeLimitSec ? `Time Left (${Math.round(s.timeLimitSec / 60)}m Frame)` : 'Elapsed Duration'}
+                </span>
+                <span id="timer-${s.id}" class="text-sm font-bold text-slate-100">${formatTime(s.elapsedSec)}</span>
+                ${s.timeLimitSec ? `
+                  <div class="text-[10px] text-amber-400 font-sans">
+                    ${s.elapsedSec >= s.timeLimitSec ? '⚠️ Frame Finished' : `${Math.max(0, Math.ceil((s.timeLimitSec - s.elapsedSec) / 60))}m remaining`}
+                  </div>
+                ` : ''}
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-500 uppercase block font-sans">Current Total</span>
+                <div class="inline-flex items-center gap-1.5">
+                  <span id="cost-${s.id}" class="text-base font-extrabold text-amber-400">₹${calculateCurrentBill(s)}</span>
+                  <button onclick="promptEditAmount(${s.id})" title="Edit Current Price" class="text-[11px] text-slate-400 hover:text-amber-400 bg-slate-900 hover:bg-slate-800 p-1 rounded-md border border-slate-800 transition">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Addons Summary -->
+            ${s.cafeBill > 0 ? `
+              <div class="mt-2.5 bg-slate-950/60 px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-slate-400 flex justify-between items-center">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-mug-saucer text-amber-400"></i> Café items (${s.items.length}):</span>
+                <span class="font-bold text-slate-200 font-mono">₹${s.cafeBill}</span>
+              </div>
+            ` : ''}
+
+            <!-- Completed Games Ledger Summary -->
+            ${s.completedGames && s.completedGames.length > 0 ? `
+              <div class="mt-2 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-amber-500/30 text-xs space-y-1">
+                <div class="text-[10px] uppercase font-bold text-amber-400 flex justify-between items-center">
+                  <span><i class="fa-solid fa-layer-group mr-1"></i> Frames / Games (${s.completedGames.length + 1})</span>
+                  <span>Prev: ₹${s.completedGames.reduce((acc, g) => acc + (g.cost || 0), 0)}</span>
+                </div>
+                <div class="text-[11px] text-slate-300 truncate font-mono">
+                  ${s.completedGames.map(g => g.name).join(' &bull; ')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Actions Buttons -->
+          <div class="mt-5 pt-3.5 border-t border-slate-800 flex flex-wrap gap-2">
+            ${!s.active ? `
+              <button onclick="promptStartSession(${s.id})" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 active:scale-95">
+                <i class="fa-solid fa-play"></i> Start Match
+              </button>
+            ` : `
+              <button onclick="togglePauseSession(${s.id})" title="${s.paused ? 'Resume Timer' : 'Pause Timer'}" class="px-2.5 py-2.5 ${s.paused ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'} font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 active:scale-95">
+                <i class="fa-solid ${s.paused ? 'fa-play' : 'fa-pause'}"></i>
+              </button>
+              <button onclick="openAddNextGameModal(${s.id})" title="Add Another Game / Frame" class="px-3 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 active:scale-95">
+                <i class="fa-solid fa-plus-circle"></i> <span class="hidden sm:inline">Add Game</span>
+              </button>
+              <button onclick="openExtendTimeModal(${s.id})" title="Extend Session Duration" class="px-2.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 active:scale-95">
+                <i class="fa-solid fa-clock"></i> <span class="hidden sm:inline">+Time</span>
+              </button>
+              <button onclick="openCafeForStation(${s.id})" title="Order Snacks for this Station" class="px-2.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 active:scale-95">
+                <i class="fa-solid fa-burger"></i>
+              </button>
+              <button onclick="cancelSession(${s.id})" title="Cancel Session" class="px-2.5 py-2.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/60 text-rose-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 active:scale-95">
+                <i class="fa-solid fa-ban"></i>
+              </button>
+              <button onclick="openCheckout(${s.id})" class="flex-1 min-w-[100px] py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-400/10 active:scale-95">
+                <i class="fa-solid fa-cash-register"></i> Checkout
+              </button>
+            `}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById('occupied-count').innerText = occupied;
+      document.getElementById('total-stations-count').innerText = stations.length;
+      updateHeaderRevenue();
+      updateCafeTargetDropdown();
+      renderConfigTable();
+    }
+
+    function filterStations(type, btnElement) {
+      activeFilter = type;
+      document.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.classList.remove('bg-amber-400', 'text-slate-950', 'font-bold', 'active');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      btnElement.classList.add('bg-amber-400', 'text-slate-950', 'font-bold', 'active');
+      btnElement.classList.remove('bg-slate-800', 'text-slate-300');
+      renderStations();
+    }
+
+    function promptStartSession(id) {
+      const s = stations.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('start-session-station-id').value = id;
+      document.getElementById('start-session-station-name').innerText = s.name;
+      document.getElementById('customer-name-input').value = '';
+      document.getElementById('customer-mobile-input').value = '';
+
+      // Populate game options for this specific table/station
+      const gameSelect = document.getElementById('game-mode-select');
+      gameSelect.innerHTML = '';
+      const games = s.availableGames && s.availableGames.length > 0 
+        ? s.availableGames 
+        : (s.type === 'snooker' ? ['Snooker', 'Century', 'Cricket', '6-Red Snooker'] : ['Standard Match']);
+      
+      games.forEach(game => {
+        const opt = document.createElement('option');
+        opt.value = game;
+        opt.innerText = game;
+        gameSelect.appendChild(opt);
+      });
+
+      document.getElementById('start-session-modal').classList.remove('hidden');
+      updateStartSlotPricePreview();
+      setTimeout(() => document.getElementById('customer-name-input').focus(), 50);
+    }
+
+    function updateStartSlotPricePreview() {
+      const id = parseInt(document.getElementById('start-session-station-id').value);
+      const s = stations.find(x => x.id === id);
+      if (!s) return;
+
+      const durationSec = parseInt(document.getElementById('frame-limit-select').value) || 0;
+      let calculatedPrice = 0;
+
+      if (s.type === 'ps5') {
+        const players = parseInt(document.getElementById('ps5-player-count-select').value) || 1;
+        const tier = ps5Rates[players] || ps5Rates[1];
+        if (durationSec === 1500) {
+          calculatedPrice = tier.halfHour;
+        } else if (durationSec === 1800) {
+          calculatedPrice = tier.halfHour;
+        } else if (durationSec === 3600) {
+          calculatedPrice = tier.fullHour;
+        } else if (durationSec === 900) {
+          calculatedPrice = Math.round(tier.halfHour / 2);
+        } else if (durationSec === 2700) {
+          calculatedPrice = Math.round((tier.halfHour + tier.fullHour) / 2);
+        } else {
+          calculatedPrice = tier.fullHour;
+        }
+      } else {
+        const halfRate = s.halfHourlyRate || Math.round(s.hourlyRate / 2);
+        if (durationSec === 1500) {
+          calculatedPrice = s.frame25Rate || 70; // 25 minutes = ₹70
+        } else if (durationSec === 1800) {
+          calculatedPrice = halfRate; // Uses explicit ₹80 for PC
+        } else if (durationSec === 3600) {
+          calculatedPrice = s.hourlyRate; // 1 hour = full price
+        } else if (durationSec === 900) {
+          calculatedPrice = Math.round(halfRate / 2);
+        } else if (durationSec === 2700) {
+          calculatedPrice = Math.round((halfRate + s.hourlyRate) / 2);
+        } else {
+          calculatedPrice = s.hourlyRate;
+        }
+      }
+
+      const previewEl = document.getElementById('start-session-price-preview');
+      if (previewEl) {
+        previewEl.innerText = durationSec === 0 ? '₹' + calculatedPrice + '/hr (Metered)' : '₹' + calculatedPrice + ' (Fixed)';
+      }
+    }
+
+    function closeStartSessionModal() {
+      document.getElementById('start-session-modal').classList.add('hidden');
+    }
+
+    function confirmStartSession(event) {
+      event.preventDefault();
+      const id = parseInt(document.getElementById('start-session-station-id').value);
+      const custName = document.getElementById('customer-name-input').value.trim() || 'Guest Player';
+      const custMobile = document.getElementById('customer-mobile-input').value.trim();
+      const selectedGame = document.getElementById('game-mode-select').value || 'Snooker';
+      const timeLimitSec = parseInt(document.getElementById('frame-limit-select').value);
+      const ps5Players = parseInt(document.getElementById('ps5-player-count-select').value) || 1;
+      
+      const s = stations.find(x => x.id === id);
+      if (s) {
+        s.active = true;
+        s.paused = false;
+        s.customerName = custName;
+        s.customerMobile = custMobile;
+        s.currentGame = selectedGame;
+        s.timeLimitSec = timeLimitSec;
+        s.timeUpTriggered = false;
+        s.manualOverridePrice = null;
+
+        // Calculate and fix the exact price for this session
+        if (timeLimitSec > 0) {
+          if (s.type === 'ps5') {
+            s.playerCount = ps5Players;
+            const tier = ps5Rates[ps5Players] || ps5Rates[1];
+            if (timeLimitSec === 1500 || timeLimitSec === 1800) s.fixedPrice = tier.halfHour;
+            else if (timeLimitSec === 3600) s.fixedPrice = tier.fullHour;
+            else if (timeLimitSec === 900) s.fixedPrice = Math.round(tier.halfHour / 2);
+            else if (timeLimitSec === 2700) s.fixedPrice = Math.round((tier.halfHour + tier.fullHour) / 2);
+            else s.fixedPrice = Math.round((timeLimitSec / 3600) * tier.fullHour);
+          } else {
+            const halfRate = s.halfHourlyRate || Math.round(s.hourlyRate / 2);
+            if (timeLimitSec === 1500) s.fixedPrice = s.frame25Rate || 70; // Exact 25 min price (₹70)
+            else if (timeLimitSec === 1800) s.fixedPrice = halfRate; // Exact 30 min price (₹80 for PC)
+            else if (timeLimitSec === 3600) s.fixedPrice = s.hourlyRate; // Exact 1 hour price
+            else if (timeLimitSec === 900) s.fixedPrice = Math.round(halfRate / 2);
+            else if (timeLimitSec === 2700) s.fixedPrice = Math.round((halfRate + s.hourlyRate) / 2);
+            else s.fixedPrice = Math.round((timeLimitSec / 3600) * s.hourlyRate);
+          }
+        } else {
+          s.fixedPrice = null; // Unlimited meter
+          if (s.type === 'ps5') {
+            s.playerCount = ps5Players;
+          }
+        }
+
+        s.startTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        s.elapsedSec = 0;
+        saveStationsToStorage();
+        closeStartSessionModal();
+        renderStations();
+        showToast(`Started session on ${s.name} for ${custName}`, 'success');
+      }
+    }
+
+    // Toggle Pause/Resume
+    function togglePauseSession(stationId) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s) return;
+      s.paused = !s.paused;
+      saveStationsToStorage();
+      renderStations();
+      showToast(`${s.name} is now ${s.paused ? 'PAUSED' : 'RESUMED'}.`, 'info');
+    }
+
+    // Cancel Session Confirmation
+    function cancelSession(stationId) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s) return;
+      targetCancelStationId = stationId;
+      document.getElementById('cancel-modal-desc').innerText = `Are you sure you want to cancel the match on "${s.name}"? Active time and current charges will be discarded.`;
+      document.getElementById('cancel-session-modal').classList.remove('hidden');
+    }
+
+    function closeCancelModal() {
+      document.getElementById('cancel-session-modal').classList.add('hidden');
+      targetCancelStationId = null;
+    }
+
+    function confirmCancelSessionAction() {
+      if (!targetCancelStationId) return;
+      const s = stations.find(x => x.id === targetCancelStationId);
+      if (s) {
+        s.active = false;
+        s.paused = false;
+        s.customerName = null;
+        s.customerMobile = null;
+        s.currentGame = null;
+        s.completedGames = [];
+        s.fixedPrice = null;
+        s.manualOverridePrice = null;
+        s.startTime = null;
+        s.elapsedSec = 0;
+        s.cafeBill = 0;
+        s.items = [];
+        saveStationsToStorage();
+        renderStations();
+        showToast(`Cancelled session on ${s.name}. Slot is now free.`, 'info');
+      }
+      closeCancelModal();
+    }
+
+    // Price Edit Modal Handlers
+    function promptEditAmount(stationId) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s) return;
+      targetEditStationId = stationId;
+      isEditingCheckoutModalPrice = false;
+      const currentCost = calculateStationTableCost(s);
+      document.getElementById('edit-price-desc').innerText = `Edit price for "${s.name}" (Current: ₹${currentCost}):`;
+      document.getElementById('edit-price-input').value = currentCost;
+      document.getElementById('edit-price-modal').classList.remove('hidden');
+      setTimeout(() => {
+        const inp = document.getElementById('edit-price-input');
+        inp.focus();
+        inp.select();
+      }, 50);
+    }
+
+    function promptEditCurrentModalAmount() {
+      if (!currentCheckoutStation) return;
+      targetEditStationId = currentCheckoutStation.id;
+      isEditingCheckoutModalPrice = true;
+      const currentCost = calculateStationTableCost(currentCheckoutStation);
+      document.getElementById('edit-price-desc').innerText = `Edit Table Subtotal for "${currentCheckoutStation.name}":`;
+      document.getElementById('edit-price-input').value = currentCost;
+      document.getElementById('edit-price-modal').classList.remove('hidden');
+      setTimeout(() => {
+        const inp = document.getElementById('edit-price-input');
+        inp.focus();
+        inp.select();
+      }, 50);
+    }
+
+    function closeEditPriceModal() {
+      document.getElementById('edit-price-modal').classList.add('hidden');
+      targetEditStationId = null;
+      isEditingCheckoutModalPrice = false;
+    }
+
+    function confirmEditPrice() {
+      if (!targetEditStationId) return;
+      const s = stations.find(x => x.id === targetEditStationId);
+      const newAmount = parseFloat(document.getElementById('edit-price-input').value);
+
+      if (isNaN(newAmount) || newAmount < 0) {
+        showToast('Please enter a valid amount (₹0 or more).', 'error');
+        return;
+      }
+
+      if (s) {
+        s.manualOverridePrice = Math.round(newAmount);
+        saveStationsToStorage();
+        renderStations();
+
+        if (isEditingCheckoutModalPrice && currentCheckoutStation && currentCheckoutStation.id === s.id) {
+          document.getElementById('modal-table-fee').innerText = `₹${s.manualOverridePrice}`;
+          recalculateModalTotal();
+        }
+
+        if (timeUpStationId === s.id) {
+          const tableFee = calculateStationTableCost(s);
+          const total = tableFee + (s.cafeBill || 0);
+          document.getElementById('time-up-table-cost').innerText = '₹' + tableFee;
+          document.getElementById('time-up-total-cost').innerText = '₹' + total;
+        }
+
+        showToast(`Updated price on ${s.name} to ₹${s.manualOverridePrice}`, 'success');
+      }
+
+      closeEditPriceModal();
+    }
+
+    // Direct Café Ordering Shortcut from Table
+    function openCafeForStation(stationId) {
+      switchTab('cafe');
+      const select = document.getElementById('cafe-target-station');
+      if (select) {
+        select.value = stationId;
+      }
+    }
+
+    // Render Café POS menu cards
+    function renderCafe() {
+      const grid = document.getElementById('cafe-menu-grid');
+      if (!grid) return;
+      const filter = document.getElementById('cafe-category-filter') ? document.getElementById('cafe-category-filter').value : 'all';
+
+      grid.innerHTML = '';
+      const itemsToDisplay = filter === 'all' 
+        ? currentCafeMenu 
+        : currentCafeMenu.filter(item => item.category === filter);
+
+      itemsToDisplay.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 hover:border-amber-400/50 rounded-2xl p-3.5 flex flex-col justify-between transition group relative';
+        card.innerHTML = `
+          <button onclick="openEditCafeItemModal(${item.id})" title="Edit Price / Item" class="absolute top-2.5 right-2.5 text-slate-500 hover:text-amber-400 p-1 text-xs transition z-10">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+          <div onclick="addCafeCart(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="cursor-pointer">
+            <div class="w-10 h-10 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center text-lg mb-2 shadow-inner">
+              <i class="fa-solid ${item.icon || 'fa-bowl-food'}"></i>
+            </div>
+            <h4 class="font-bold text-white text-xs leading-snug line-clamp-2">${item.name}</h4>
+            <span class="text-[10px] text-slate-400 capitalize">${item.category}</span>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="font-mono font-bold text-amber-400 text-sm">₹${item.price}</span>
+            <button onclick="addCafeCart(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="bg-slate-800 group-hover:bg-amber-400 group-hover:text-slate-950 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 active:scale-95">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function calculateStationTableCost(station) {
+      // Prior completed games accumulated in this session
+      const completedGamesTotal = (station.completedGames && Array.isArray(station.completedGames))
+        ? station.completedGames.reduce((acc, g) => acc + (g.cost || 0), 0)
+        : 0;
+
+      // 1. If manual override was entered via the Edit button, always honor it
+      if (station.manualOverridePrice !== undefined && station.manualOverridePrice !== null) {
+        return station.manualOverridePrice + completedGamesTotal;
+      }
+
+      // 2. If a fixed price was locked in at match start, use the exact fixed fee
+      if (station.fixedPrice !== undefined && station.fixedPrice !== null) {
+        return station.fixedPrice + completedGamesTotal;
+      }
+
+      const billableSeconds = Math.max(station.elapsedSec, 60);
+
+      // Fallback for unlimited / open sessions
+      if (station.type === 'ps5') {
+        const players = station.playerCount || 1;
+        const tier = ps5Rates[players] || ps5Rates[1];
+        if (billableSeconds <= 1800) {
+          return tier.halfHour + completedGamesTotal;
+        } else {
+          const extraSec = billableSeconds - 1800;
+          const additionalHourlyRate = tier.fullHour - tier.halfHour;
+          return Math.round(tier.halfHour + (extraSec / 1800) * additionalHourlyRate) + completedGamesTotal;
+        }
+      }
+
+      // Explicit halfHourlyRate check for PC / other stations
+      if (station.halfHourlyRate && billableSeconds <= 1800) {
+        return station.halfHourlyRate + completedGamesTotal;
+      }
+
+      // Standard hourly fallback
+      const hours = billableSeconds / 3600;
+      return Math.round(hours * station.hourlyRate) + completedGamesTotal;
+    }
+    // ADD GAME & EXTEND TIME LOGIC
+    function openAddNextGameModal(stationId) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s || !s.active) return;
+
+      const stationIdEl = document.getElementById('next-game-station-id');
+      const prevNameEl = document.getElementById('prev-game-name');
+      const prevDurEl = document.getElementById('prev-game-duration');
+      const prevCostEl = document.getElementById('prev-game-cost');
+      const nextGameSelect = document.getElementById('next-game-select');
+      const modalEl = document.getElementById('add-next-game-modal');
+
+      if (!stationIdEl || !modalEl) return;
+
+      stationIdEl.value = s.id;
+      if (prevNameEl) prevNameEl.innerText = s.currentGame || 'Snooker Frame';
+      if (prevDurEl) prevDurEl.innerText = formatTime(s.elapsedSec);
+
+      // Compute current frame cost
+      let currentFrameFee = 0;
+      if (s.manualOverridePrice !== undefined && s.manualOverridePrice !== null) {
+        currentFrameFee = s.manualOverridePrice;
+      } else if (s.fixedPrice !== undefined && s.fixedPrice !== null) {
+        currentFrameFee = s.fixedPrice;
+      } else {
+        const halfRate = s.halfHourlyRate || Math.round(s.hourlyRate / 2);
+        currentFrameFee = s.elapsedSec <= 1500 ? (s.frame25Rate || 70) : (s.elapsedSec <= 1800 ? halfRate : s.hourlyRate);
+      }
+      if (prevCostEl) prevCostEl.value = currentFrameFee;
+
+      // Populate game options for next game
+      if (nextGameSelect) {
+        nextGameSelect.innerHTML = '';
+        const games = s.availableGames && s.availableGames.length > 0 
+          ? s.availableGames 
+          : (s.type === 'snooker' ? ['Snooker', 'Century', 'Cricket', 'SAFAL', 'RD'] : ['Standard Match']);
+        
+        games.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g;
+          opt.innerText = g;
+          if (g !== s.currentGame) opt.selected = true;
+          nextGameSelect.appendChild(opt);
+        });
+      }
+
+      updateNextGameSlotPricePreview();
+      modalEl.classList.remove('hidden');
+    }
+
+    function openAddNextGameFromTimeUp() {
+      const id = timeUpStationId;
+      document.getElementById('time-up-modal').classList.add('hidden');
+      if (id) {
+        openAddNextGameModal(id);
+      }
+    }
+
+    function closeAddNextGameModal() {
+      document.getElementById('add-next-game-modal').classList.add('hidden');
+    }
+
+    function updateNextGameSlotPricePreview() {
+      const stationId = parseInt(document.getElementById('next-game-station-id').value);
+      const s = stations.find(x => x.id === stationId);
+      if (!s) return;
+
+      const durationSec = parseInt(document.getElementById('next-game-duration-select').value) || 0;
+      let calculatedPrice = 0;
+
+      if (s.type === 'ps5') {
+        const players = s.playerCount || 1;
+        const tier = ps5Rates[players] || ps5Rates[1];
+        if (durationSec === 1500 || durationSec === 1800) calculatedPrice = tier.halfHour;
+        else if (durationSec === 3600) calculatedPrice = tier.fullHour;
+        else calculatedPrice = tier.halfHour;
+      } else {
+        const halfRate = s.halfHourlyRate || Math.round(s.hourlyRate / 2);
+        if (durationSec === 1500) calculatedPrice = s.frame25Rate || 70;
+        else if (durationSec === 1800) calculatedPrice = halfRate;
+        else if (durationSec === 3600) calculatedPrice = s.hourlyRate;
+        else calculatedPrice = halfRate;
+      }
+
+      const previewEl = document.getElementById('next-game-price-preview');
+      if (previewEl) {
+        previewEl.innerText = durationSec === 0 ? `₹${calculatedPrice}/hr (Metered)` : `₹${calculatedPrice} (Fixed)`;
+      }
+    }
+
+    function confirmAddNextGame(event) {
+      event.preventDefault();
+      const stationId = parseInt(document.getElementById('next-game-station-id').value);
+      const s = stations.find(x => x.id === stationId);
+      if (!s) return;
+
+      const lockedCost = parseInt(document.getElementById('prev-game-cost').value) || 0;
+      const nextGameMode = document.getElementById('next-game-select').value || 'Next Frame';
+      const durationSec = parseInt(document.getElementById('next-game-duration-select').value) || 0;
+
+      if (!s.completedGames) s.completedGames = [];
+      s.completedGames.push({
+        name: s.currentGame || 'Snooker Frame',
+        durationSec: s.elapsedSec,
+        cost: lockedCost
+      });
+
+      // Reset timer and configure new game frame
+      s.currentGame = nextGameMode;
+      s.elapsedSec = 0;
+      s.timeLimitSec = durationSec;
+      s.timeUpTriggered = false;
+      s.paused = false;
+      s.manualOverridePrice = null;
+
+      // Configure next fixed price
+      if (durationSec > 0) {
+        if (s.type === 'ps5') {
+          const tier = ps5Rates[s.playerCount || 1] || ps5Rates[1];
+          s.fixedPrice = (durationSec === 1500 || durationSec === 1800) ? tier.halfHour : tier.fullHour;
+        } else {
+          const halfRate = s.halfHourlyRate || Math.round(s.hourlyRate / 2);
+          s.fixedPrice = durationSec === 1500 ? (s.frame25Rate || 70) : (durationSec === 1800 ? halfRate : s.hourlyRate);
+        }
+      } else {
+        s.fixedPrice = null;
+      }
+
+      saveStationsToStorage();
+      closeAddNextGameModal();
+      renderStations();
+      showToast(`Added ${nextGameMode} to ${s.name} tab! Previous frame locked at ₹${lockedCost}.`, 'success');
+    }
+
+    // EXTEND SESSION TIME HANDLERS
+    function openExtendTimeModal(stationId) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s || !s.active) return;
+      document.getElementById('extend-station-id').value = s.id;
+      document.getElementById('extend-station-desc').innerText = `Add playing time to "${s.name}" (Customer: ${s.customerName || 'Guest'})`;
+      document.getElementById('extend-custom-minutes').value = '';
+      document.getElementById('extend-time-modal').classList.remove('hidden');
+    }
+
+    function closeExtendTimeModal() {
+      document.getElementById('extend-time-modal').classList.add('hidden');
+    }
+
+    function quickExtendTime(minutes) {
+      const stationId = parseInt(document.getElementById('extend-station-id').value);
+      applyExtendTime(stationId, minutes);
+    }
+
+    function confirmCustomExtendTime() {
+      const stationId = parseInt(document.getElementById('extend-station-id').value);
+      const minutes = parseInt(document.getElementById('extend-custom-minutes').value);
+      if (!minutes || minutes <= 0) {
+        showToast('Please enter a valid number of minutes.', 'error');
+        return;
+      }
+      applyExtendTime(stationId, minutes);
+    }
+
+    function applyExtendTime(stationId, minutes) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s || !s.active) return;
+
+      const additionalSec = minutes * 60;
+      if (!s.timeLimitSec || s.timeLimitSec === 0) {
+        s.timeLimitSec = s.elapsedSec + additionalSec;
+      } else {
+        s.timeLimitSec += additionalSec;
+      }
+
+      s.paused = false;
+      s.timeUpTriggered = false;
+      saveStationsToStorage();
+      closeExtendTimeModal();
+      renderStations();
+      showToast(`Added +${minutes} minutes to ${s.name}!`, 'success');
+    }
+
+    function addCafeCart(item) {
+      const existing = cafeCart.find(i => i.id === item.id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cafeCart.push({ ...item, qty: 1 });
+      }
+      renderCafeCart();
+    }
+
+    // Modal Handlers to Add & Edit Cafe Items / Prices
+    function openAddCafeItemModal() {
+      document.getElementById('cafe-item-id').value = '';
+      document.getElementById('cafe-item-form').reset();
+      document.getElementById('cafe-item-modal-title').innerHTML = `<i class="fa-solid fa-plus-circle text-amber-400"></i> Add Menu Item`;
+      document.getElementById('delete-cafe-item-btn').classList.add('hidden');
+      document.getElementById('cafe-item-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('cafe-item-name').focus(), 50);
+    }
+
+    function openEditCafeItemModal(id) {
+      const item = currentCafeMenu.find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('cafe-item-id').value = item.id;
+      document.getElementById('cafe-item-name').value = item.name;
+      document.getElementById('cafe-item-price').value = item.price;
+      document.getElementById('cafe-item-category').value = item.category || 'snacks';
+      document.getElementById('cafe-item-icon').value = item.icon || 'fa-bowl-food';
+
+      document.getElementById('cafe-item-modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-400"></i> Edit Item Price / Info`;
+      document.getElementById('delete-cafe-item-btn').classList.remove('hidden');
+      document.getElementById('cafe-item-modal').classList.remove('hidden');
+      setTimeout(() => {
+        const pInput = document.getElementById('cafe-item-price');
+        pInput.focus();
+        pInput.select();
+      }, 50);
+    }
+
+    function closeCafeItemModal() {
+      document.getElementById('cafe-item-modal').classList.add('hidden');
+    }
+
+    function saveCafeItem(event) {
+      event.preventDefault();
+      const idVal = document.getElementById('cafe-item-id').value;
+      const name = document.getElementById('cafe-item-name').value.trim();
+      const price = parseFloat(document.getElementById('cafe-item-price').value);
+      const category = document.getElementById('cafe-item-category').value;
+      const icon = document.getElementById('cafe-item-icon').value;
+
+      if (!name || isNaN(price) || price <= 0) {
+        showToast('Please enter a valid item name and price.', 'error');
+        return;
+      }
+
+      if (idVal) {
+        // Edit Existing Item
+        const item = currentCafeMenu.find(x => x.id === parseInt(idVal));
+        if (item) {
+          item.name = name;
+          item.price = Math.round(price);
+          item.category = category;
+          item.icon = icon;
+          showToast(`Updated "${name}" price to ₹${item.price}`, 'success');
+        }
+      } else {
+        // Create New Item
+        const newId = currentCafeMenu.length > 0 ? Math.max(...currentCafeMenu.map(x => x.id)) + 1 : 200;
+        currentCafeMenu.push({
+          id: newId,
+          name: name,
+          price: Math.round(price),
+          category: category,
+          icon: icon
+        });
+        showToast(`Added "${name}" (₹${Math.round(price)}) to menu!`, 'success');
+      }
+
+      saveCafeMenuToStorage();
+      closeCafeItemModal();
+      renderCafe();
+    }
+
+    function deleteCurrentCafeItem() {
+      const idVal = document.getElementById('cafe-item-id').value;
+      if (!idVal) return;
+      const id = parseInt(idVal);
+      const item = currentCafeMenu.find(x => x.id === id);
+      currentCafeMenu = currentCafeMenu.filter(x => x.id !== id);
+      saveCafeMenuToStorage();
+      closeCafeItemModal();
+      renderCafe();
+      showToast(`Removed "${item ? item.name : 'item'}" from menu.`, 'info');
+    }
+
+    function removeCafeCart(index) {
+      cafeCart.splice(index, 1);
+      renderCafeCart();
+    }
+
+    function updateCartQty(index, delta) {
+      if (cafeCart[index]) {
+        cafeCart[index].qty += delta;
+        if (cafeCart[index].qty <= 0) {
+          cafeCart.splice(index, 1);
+        }
+      }
+      renderCafeCart();
+    }
+
+    function clearCafeCart() {
+      cafeCart = [];
+      renderCafeCart();
+    }
+
+    function renderCafeCart() {
+      const list = document.getElementById('cafe-cart-list');
+      const subtotalEl = document.getElementById('cafe-cart-subtotal');
+      const totalEl = document.getElementById('cafe-cart-total');
+
+      if (cafeCart.length === 0) {
+        list.innerHTML = `<p class="text-slate-500 italic text-xs py-4 text-center">Your cart is empty. Click menu items to add.</p>`;
+        subtotalEl.innerText = '₹0';
+        totalEl.innerText = '₹0';
+        return;
+      }
+
+      list.innerHTML = '';
+      let sum = 0;
+      cafeCart.forEach((item, idx) => {
+        const itemTotal = item.price * item.qty;
+        sum += itemTotal;
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs';
+        row.innerHTML = `
+          <div class="truncate mr-2">
+            <div class="font-semibold text-slate-200 truncate">${item.name}</div>
+            <div class="text-[10px] text-slate-400">₹${item.price} each</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg">
+              <button onclick="updateCartQty(${idx}, -1)" class="px-2 py-0.5 text-slate-400 hover:text-white">-</button>
+              <span class="px-1.5 font-mono text-slate-200">${item.qty}</span>
+              <button onclick="updateCartQty(${idx}, 1)" class="px-2 py-0.5 text-slate-400 hover:text-white">+</button>
+            </div>
+            <span class="font-mono font-bold text-amber-400 min-w-[40px] text-right">₹${itemTotal}</span>
+            <button onclick="removeCafeCart(${idx})" class="text-slate-500 hover:text-red-400 ml-1"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+      subtotalEl.innerText = '₹' + sum;
+      totalEl.innerText = '₹' + sum;
+    }
+
+    function updateCafeTargetDropdown() {
+      const select = document.getElementById('cafe-target-station');
+      if (!select) return;
+      select.innerHTML = '';
+
+      // Option 1: Standalone Walk-in
+      const walkinOpt = document.createElement('option');
+      walkinOpt.value = 'walkin';
+      walkinOpt.innerText = 'Cash & Carry / Direct Walk-in (Instant Settle)';
+      select.appendChild(walkinOpt);
+
+      // Active Stations
+      stations.filter(s => s.active).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.innerText = `Attach to: ${s.name} (Running)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function commitCafeOrder() {
+      const select = document.getElementById('cafe-target-station');
+      const targetValue = select.value;
+      if (cafeCart.length === 0) {
+        showToast('Cart is empty. Select items to order.', 'error');
+        return;
+      }
+
+      const orderSum = cafeCart.reduce((acc, cur) => acc + (cur.price * cur.qty), 0);
+
+      if (targetValue === 'walkin') {
+        // Direct cash & carry checkout
+        const invNumber = 'GZ-' + Math.floor(1000 + Math.random() * 9000);
+        const logEntry = {
+          invoice: invNumber,
+          stationName: 'Café Direct Walk-in',
+          durationSec: 0,
+          tableFee: 0,
+          cafeFee: orderSum,
+          tax: 0,
+          discount: 0,
+          grandTotal: orderSum,
+          paymentMethod: 'Cash / UPI',
+          items: [...cafeCart],
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          date: new Date().toLocaleDateString(),
+          isoDate: formatISODate(new Date())
+        };
+
+        settledLogs.unshift(logEntry);
+        saveLogsToStorage();
+        cafeCart = [];
+        renderCafeCart();
+        updateHeaderRevenue();
+        applyDateFilter();
+        showToast(`Direct Café order settled: ₹${orderSum}`, 'success');
+      } else {
+        const targetId = parseInt(targetValue);
+        const target = stations.find(s => s.id === targetId);
+        if (target) {
+          target.cafeBill += orderSum;
+          cafeCart.forEach(ci => {
+            const existing = target.items.find(i => i.id === ci.id);
+            if (existing) {
+              existing.qty += ci.qty;
+            } else {
+              target.items.push({ ...ci });
+            }
+          });
+          cafeCart = [];
+          renderCafeCart();
+          saveStationsToStorage();
+          renderStations();
+          showToast(`Attached ₹${orderSum} snacks to ${target.name}`, 'success');
+          switchTab('tables');
+        }
+      }
+    }
+
+    // CHECKOUT MODAL & INVOICING
+    function openCheckout(stationId) {
+      const s = stations.find(x => x.id === stationId);
+      if (!s) return;
+      currentCheckoutStation = s;
+
+      const tableFee = calculateStationTableCost(s);
+      const cafeFee = s.cafeBill || 0;
+
+      document.getElementById('checkout-subtitle').innerText = `Settling ${s.name}`;
+      document.getElementById('receipt-inv-num').innerText = 'INV: #GZ-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('receipt-date-time').innerText = new Date().toLocaleString();
+      document.getElementById('modal-station-name').innerText = `${s.name} (${s.currentGame || 'Standard'})`;
+      const modalCustEl = document.getElementById('modal-customer-name');
+      if (modalCustEl) modalCustEl.innerText = s.customerName || 'Guest';
+      const modalMobileEl = document.getElementById('modal-customer-mobile');
+      if (modalMobileEl) modalMobileEl.innerText = s.customerMobile ? `Mobile: ${s.customerMobile}` : '';
+      document.getElementById('modal-duration').innerText = formatTime(s.elapsedSec);
+      document.getElementById('modal-station-rate').innerText = s.type === 'ps5' ? `${s.playerCount || 1} Players Tier` : `₹${s.hourlyRate}/hr`;
+      document.getElementById('modal-table-fee').innerText = `₹${tableFee}`;
+      document.getElementById('modal-cafe-total').innerText = `₹${cafeFee}`;
+
+      // Populate Items list
+      const itemsList = document.getElementById('modal-cafe-items-list');
+      itemsList.innerHTML = '';
+      if (s.items && s.items.length > 0) {
+        s.items.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'flex justify-between text-xs';
+          row.innerHTML = `<span>${item.qty}x ${item.name}</span> <span>₹${item.price * item.qty}</span>`;
+          itemsList.appendChild(row);
+        });
+      } else {
+        itemsList.innerHTML = `<span class="text-slate-500 italic text-[11px]">No café orders on this tab.</span>`;
+      }
+
+      document.getElementById('tax-toggle').checked = false;
+      document.getElementById('modal-discount-input').value = 0;
+      recalculateModalTotal();
+
+      document.getElementById('checkout-modal').classList.remove('hidden');
+    }
+
+    function recalculateModalTotal() {
+      if (!currentCheckoutStation) return;
+      const s = currentCheckoutStation;
+      const tableFee = calculateStationTableCost(s);
+      const cafeFee = s.cafeBill || 0;
+      const subtotal = tableFee + cafeFee;
+
+      const taxApplied = document.getElementById('tax-toggle').checked;
+      const taxRate = taxApplied ? 0.05 : 0.0;
+      const taxAmount = Math.round(subtotal * taxRate);
+
+      const discount = parseFloat(document.getElementById('modal-discount-input').value) || 0;
+      const grandTotal = Math.max(0, subtotal + taxAmount - discount);
+
+      document.getElementById('modal-tax-amount').innerText = `₹${taxAmount}`;
+      document.getElementById('modal-grand-total').innerText = `₹${grandTotal}`;
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.add('hidden');
+      currentCheckoutStation = null;
+    }
+
+    function settleAndFreeSlot() {
+      if (!currentCheckoutStation) return;
+      const s = currentCheckoutStation;
+      const tableFee = calculateStationTableCost(s);
+      const cafeFee = s.cafeBill || 0;
+      const subtotal = tableFee + cafeFee;
+
+      const taxApplied = document.getElementById('tax-toggle').checked;
+      const taxRate = taxApplied ? 0.05 : 0.0;
+      const taxAmount = Math.round(subtotal * taxRate);
+      const discount = parseFloat(document.getElementById('modal-discount-input').value) || 0;
+      const grandTotal = Math.max(0, subtotal + taxAmount - discount);
+
+      const paymentEl = document.querySelector('input[name="payment-method"]:checked');
+      const paymentMethod = paymentEl ? paymentEl.value : 'Cash';
+      const invNumber = document.getElementById('receipt-inv-num').innerText.replace('INV: #', '');
+
+      // Record to Log
+      const now = new Date();
+      const logEntry = {
+        invoice: invNumber,
+        stationName: `${s.name} [${s.currentGame || 'Snooker'}]`,
+        customerName: s.customerName || 'Guest',
+        customerMobile: s.customerMobile || '',
+        durationSec: s.elapsedSec,
+        tableFee: tableFee,
+        cafeFee: cafeFee,
+        tax: taxAmount,
+        discount: discount,
+        grandTotal: grandTotal,
+        paymentMethod: paymentMethod,
+        items: [...s.items],
+        timestamp: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: now.toLocaleDateString(),
+        isoDate: formatISODate(now)
+      };
+
+      settledLogs.unshift(logEntry);
+      saveLogsToStorage();
+
+      // Reset Table
+      s.active = false;
+      s.paused = false;
+      s.customerName = null;
+      s.customerMobile = null;
+      s.currentGame = null;
+      s.completedGames = [];
+      s.fixedPrice = null;
+      s.manualOverridePrice = null;
+      s.startTime = null;
+      s.elapsedSec = 0;
+      s.cafeBill = 0;
+      s.items = [];
+      saveStationsToStorage();
+
+      closeCheckoutModal();
+      renderStations();
+      applyDateFilter();
+      updateHeaderRevenue();
+      showToast(`Settled & Invoice created: ₹${grandTotal}`, 'success');
+    }
+
+    function printReceipt() {
+      window.print();
+    }
+
+    // Handle Unpaid / Due Sessions
+    function UNPAID() {
+      if (!currentCheckoutStation) return;
+      const s = currentCheckoutStation;
+      const tableFee = calculateStationTableCost(s);
+      const cafeFee = s.cafeBill || 0;
+      const subtotal = tableFee + cafeFee;
+
+      const taxApplied = document.getElementById('tax-toggle').checked;
+      const taxRate = taxApplied ? 0.05 : 0.0;
+      const taxAmount = Math.round(subtotal * taxRate);
+      const discount = parseFloat(document.getElementById('modal-discount-input').value) || 0;
+      const grandTotal = Math.max(0, subtotal + taxAmount - discount);
+
+      const invNumber = document.getElementById('receipt-inv-num').innerText.replace('INV: #', '');
+
+      // Record to Log marked as UNPAID
+      const now = new Date();
+      const logEntry = {
+        invoice: invNumber,
+        stationName: s.name,
+        customerName: s.customerName || 'Guest',
+        customerMobile: s.customerMobile || '',
+        durationSec: s.elapsedSec,
+        tableFee: tableFee,
+        cafeFee: cafeFee,
+        tax: taxAmount,
+        discount: discount,
+        grandTotal: grandTotal,
+        paymentMethod: 'UNPAID (Pending)',
+        items: [...s.items],
+        timestamp: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: now.toLocaleDateString(),
+        isoDate: formatISODate(now)
+      };
+
+      settledLogs.unshift(logEntry);
+      saveLogsToStorage();
+
+      // Free the Station Slot
+      s.active = false;
+      s.paused = false;
+      s.customerName = null;
+      s.customerMobile = null;
+      s.currentGame = null;
+      s.completedGames = [];
+      s.fixedPrice = null;
+      s.manualOverridePrice = null;
+      s.startTime = null;
+      s.elapsedSec = 0;
+      s.cafeBill = 0;
+      s.items = [];
+      saveStationsToStorage();
+
+      closeCheckoutModal();
+      renderStations();
+      applyDateFilter();
+      updateHeaderRevenue();
+      showToast(`Slot cleared. Marked #${invNumber} as UNPAID (Due: ₹${grandTotal})`, 'error');
+    }
+
+    // Export thermal text receipt
+    function downloadTextFileReceipt() {
+      if (!currentCheckoutStation) return;
+      const s = currentCheckoutStation;
+      const tableFee = calculateStationTableCost(s);
+      const cafeFee = s.cafeBill || 0;
+      const subtotal = tableFee + cafeFee;
+      const taxApplied = document.getElementById('tax-toggle').checked;
+      const taxAmount = Math.round(subtotal * (taxApplied ? 0.05 : 0.0));
+      const discount = parseFloat(document.getElementById('modal-discount-input').value) || 0;
+      const grandTotal = Math.max(0, subtotal + taxAmount - discount);
+      const invNumber = document.getElementById('receipt-inv-num').innerText;
+
+      let billText = `=====================================\n`;
+      billText += `       GAMEZONE - SNOOKER STREET      \n`;
+      billText += `=====================================\n`;
+      billText += `Date: ${new Date().toLocaleString()}\n`;
+      billText += `${invNumber}\n`;
+      billText += `Station: ${s.name}\n`;
+      billText += `Customer: ${s.customerName || 'Guest'}\n`;
+      if (s.customerMobile) billText += `Mobile: ${s.customerMobile}\n`;
+      billText += `Duration: ${formatTime(s.elapsedSec)}\n`;
+      billText += `Tariff: ${s.type === 'ps5' ? `${s.playerCount || 1} Players Tier` : `Rs. ${s.hourlyRate}/hr`}\n`;
+      billText += `-------------------------------------\n`;
+      billText += `Table Fee:          Rs. ${tableFee}\n`;
+      if (s.items && s.items.length > 0) {
+        billText += `Café Orders:\n`;
+        s.items.forEach(i => {
+          billText += `  - ${i.qty}x ${i.name} = Rs. ${i.price * i.qty}\n`;
+        });
+      }
+      billText += `Café Total:         Rs. ${cafeFee}\n`;
+      billText += `Tax (GST 5%):       Rs. ${taxAmount}\n`;
+      billText += `Discount:           Rs. ${discount}\n`;
+      billText += `-------------------------------------\n`;
+      billText += `NET PAYABLE:        Rs. ${grandTotal}\n`;
+      billText += `=====================================\n`;
+      billText += `  Thank you for playing with us!     \n`;
+      billText += `=====================================\n`;
+
+      const blob = new Blob([billText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Bill_${s.name.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Text receipt downloaded', 'info');
+    }
+
+    // SETTLED LOGS & AUDIT TRAIL
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[character]);
+    }
+
+    function editSettledCustomerName(index) {
+      const log = settledLogs[index];
+      if (!log) return;
+      const updatedName = prompt('Enter the customer name:', log.customerName || 'Guest');
+      if (updatedName === null) return;
+      log.customerName = updatedName.trim() || 'Guest';
+      saveLogsToStorage();
+      applyDateFilter();
+      showToast('Customer name updated.', 'success');
+    }
+
+    function renderSettledLogs() {
+      const tbody = document.getElementById('settled-log-body');
+      const emptyMsg = document.getElementById('no-logs-msg');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const logsToDisplay = (currentFilteredLogs && currentFilteredLogs.length >= 0) ? currentFilteredLogs : settledLogs;
+
+      if (logsToDisplay.length === 0) {
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      logsToDisplay.forEach(log => {
+        const logIndex = settledLogs.indexOf(log);
+        const isPending = log.paymentMethod && log.paymentMethod.toUpperCase().includes('UNPAID');
+        const row = document.createElement('tr');
+        row.className = isPending ? 'bg-rose-950/20 hover:bg-rose-950/30 transition border-l-2 border-rose-500' : 'hover:bg-slate-800/40 transition';
+        row.innerHTML = `
+          <td class="p-3.5 font-bold ${isPending ? 'text-rose-400' : 'text-amber-400'}">#${log.invoice}</td>
+          <td class="p-3.5 font-sans font-semibold text-slate-200">
+            <div>${log.stationName}</div>
+            <div class="text-[10px] text-amber-400/90 font-normal"><i class="fa-solid fa-user text-[9px] mr-1"></i>${escapeHTML(log.customerName || 'Guest')}</div>
+            ${log.customerMobile ? `<div class="text-[10px] text-slate-400 font-normal"><i class="fa-solid fa-phone text-[9px] mr-1"></i>${escapeHTML(log.customerMobile)}</div>` : ''}
+          </td>
+          <td class="p-3.5">${formatTime(log.durationSec)}</td>
+          <td class="p-3.5">₹${log.tableFee}</td>
+          <td class="p-3.5">₹${log.cafeFee}</td>
+          <td class="p-3.5 text-slate-400">₹${log.tax || 0}</td>
+          <td class="p-3.5 ${isPending ? 'text-rose-400 font-extrabold' : 'text-emerald-400 font-black'}">₹${log.grandTotal}</td>
+          <td class="p-3.5 font-sans">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isPending ? 'bg-rose-950 text-rose-300 border border-rose-700/60' : 'bg-slate-800 text-slate-300'}">
+              ${log.paymentMethod}
+            </span>
+          </td>
+          <td class="p-3.5 text-slate-400 font-sans text-[11px]">${log.date || ''} ${log.timestamp}</td>
+          <td class="p-3.5 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              ${isPending ? `
+                <button onclick="openSettlePendingModal(${logIndex})" title="Receive & Clear Payment" class="text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-2 py-1 rounded-lg transition shadow-sm flex items-center gap-1">
+                  <i class="fa-solid fa-hand-holding-dollar"></i> Pay Now
+                </button>
+              ` : ''}
+              ${!isPending ? `
+                <button onclick="openEditLogPaymentMethod(${logIndex})" title="Edit Payment Method" class="text-slate-400 hover:text-amber-400 px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg transition">
+                  <i class="fa-solid fa-credit-card"></i>
+                </button>
+              ` : ''}
+              <button onclick="editSettledCustomerName(${logIndex})" title="Edit Customer Name" class="text-slate-400 hover:text-amber-400 px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg transition">
+                <i class="fa-solid fa-user-pen"></i>
+              </button>
+              <button onclick="reprintLogReceipt(${logIndex})" title="Reprint Slip" class="text-slate-400 hover:text-amber-400 px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg transition">
+                <i class="fa-solid fa-print"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function exportLogsCSV() {
+      const logsToExport = currentFilteredLogs.length > 0 ? currentFilteredLogs : settledLogs;
+      if (logsToExport.length === 0) {
+        showToast('No history records to export for this period.', 'error');
+        return;
+      }
+      let csv = 'Invoice,Station,Customer,CustomerMobile,DurationSec,TableFee,CafeFee,Tax,Discount,GrandTotal,PaymentMethod,Time,Date\n';
+      logsToExport.forEach(l => {
+        csv += `"${l.invoice}","${l.stationName}","${l.customerName || 'Guest'}","${l.customerMobile || ''}",${l.durationSec},${l.tableFee},${l.cafeFee},${l.tax || 0},${l.discount || 0},${l.grandTotal},"${l.paymentMethod}","${l.timestamp}","${l.date}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `GameZone_${activeDateFilter}_Audit_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${logsToExport.length} records to CSV!`, 'success');
+    }
+
+    function downloadFilteredSummaryReport() {
+      const logs = currentFilteredLogs.length > 0 ? currentFilteredLogs : settledLogs;
+      if (logs.length === 0) {
+        showToast('No records available for the current filter.', 'error');
+        return;
+      }
+
+      let cashTotal = 0;
+      let upiTotal = 0;
+      let cardTotal = 0;
+      let unpaidTotal = 0;
+      let grandPaid = 0;
+
+      logs.forEach(l => {
+        const pm = (l.paymentMethod || '').toUpperCase();
+        if (pm.includes('UNPAID')) {
+          unpaidTotal += (l.grandTotal || 0);
+        } else {
+          grandPaid += (l.grandTotal || 0);
+          if (pm.includes('CASH')) cashTotal += (l.grandTotal || 0);
+          else if (pm.includes('UPI') || pm.includes('QR')) upiTotal += (l.grandTotal || 0);
+          else if (pm.includes('CARD')) cardTotal += (l.grandTotal || 0);
+          else cashTotal += (l.grandTotal || 0);
+        }
+      });
+
+      let summaryText = `=====================================\n`;
+      summaryText += `    GAMEZONE - SETTLED HISTORY REPORT \n`;
+      summaryText += `=====================================\n`;
+      summaryText += `Filter Period:     ${activeDateFilter.toUpperCase()}\n`;
+      summaryText += `Export Timestamp:  ${new Date().toLocaleString()}\n`;
+      summaryText += `Total Invoices:    ${logs.length}\n`;
+      summaryText += `-------------------------------------\n`;
+      summaryText += `Cash Collected:    Rs. ${cashTotal}\n`;
+      summaryText += `UPI / QR:          Rs. ${upiTotal}\n`;
+      summaryText += `Card:              Rs. ${cardTotal}\n`;
+      summaryText += `Unpaid / Due:      Rs. ${unpaidTotal}\n`;
+      summaryText += `-------------------------------------\n`;
+      summaryText += `TOTAL REVENUE:     Rs. ${grandPaid}\n`;
+      summaryText += `=====================================\n\n`;
+      summaryText += `TRANSACTIONS LOG:\n`;
+      summaryText += `-------------------------------------\n`;
+
+      logs.forEach((l, idx) => {
+        summaryText += `${idx + 1}. [#${l.invoice}] ${l.stationName} | Cust: ${l.customerName || 'Guest'} | Rs. ${l.grandTotal} (${l.paymentMethod}) @ ${l.date || ''} ${l.timestamp}\n`;
+      });
+
+      const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `History_Report_${activeDateFilter}_${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Downloaded period summary report!', 'info');
+    }
+
+    // Process & clear pending/unpaid transactions from history
+    function openSettlePendingModal(index) {
+      const log = settledLogs[index];
+      if (!log) return;
+      pendingSettleIndex = index;
+      isEditingLogPaymentMethod = false;
+      document.getElementById('pending-modal-title').innerText = 'Clear Due Payment';
+      document.getElementById('pending-modal-amount-label').innerText = 'Amount Due:';
+      document.getElementById('pending-modal-method-label').innerText = 'Select Payment Method Received:';
+      document.getElementById('pending-modal-submit-label').innerText = 'Collect & Mark Paid';
+
+      document.getElementById('pending-modal-inv').innerText = '#' + log.invoice;
+      document.getElementById('pending-modal-cust').innerText = log.customerName || 'Guest';
+      document.getElementById('pending-modal-station').innerText = log.stationName;
+      document.getElementById('pending-modal-amount').innerText = '₹' + log.grandTotal;
+
+      document.getElementById('settle-pending-modal').classList.remove('hidden');
+    }
+
+    function openEditLogPaymentMethod(index) {
+      const log = settledLogs[index];
+      if (!log || (log.paymentMethod || '').toUpperCase().includes('UNPAID')) return;
+      pendingSettleIndex = index;
+      isEditingLogPaymentMethod = true;
+      document.getElementById('pending-modal-title').innerText = 'Edit Payment Method';
+      document.getElementById('pending-modal-amount-label').innerText = 'Amount Paid:';
+      document.getElementById('pending-modal-method-label').innerText = 'Select Payment Method:';
+      document.getElementById('pending-modal-submit-label').innerText = 'Save Payment Method';
+
+      document.getElementById('pending-modal-inv').innerText = '#' + log.invoice;
+      document.getElementById('pending-modal-cust').innerText = log.customerName || 'Guest';
+      document.getElementById('pending-modal-station').innerText = log.stationName;
+      document.getElementById('pending-modal-amount').innerText = '₹' + log.grandTotal;
+
+      const currentMethod = (log.paymentMethod || '').toUpperCase();
+      const selectedMethod = currentMethod.includes('UPI') || currentMethod.includes('QR')
+        ? 'UPI / QR'
+        : currentMethod.includes('CARD') ? 'Card' : 'Cash';
+      document.querySelectorAll('input[name="pending-payment-method"]').forEach(input => {
+        input.checked = input.value === selectedMethod;
+      });
+
+      document.getElementById('settle-pending-modal').classList.remove('hidden');
+    }
+
+    function closePendingModal() {
+      document.getElementById('settle-pending-modal').classList.add('hidden');
+      pendingSettleIndex = null;
+      isEditingLogPaymentMethod = false;
+    }
+
+    function confirmSettlePending() {
+      if (pendingSettleIndex === null || !settledLogs[pendingSettleIndex]) return;
+
+      const log = settledLogs[pendingSettleIndex];
+      const selectedMethodEl = document.querySelector('input[name="pending-payment-method"]:checked');
+      const method = selectedMethodEl ? selectedMethodEl.value : 'Cash';
+
+      if (isEditingLogPaymentMethod) {
+        const wasSettled = (log.paymentMethod || '').toUpperCase().includes('SETTLED');
+        log.paymentMethod = wasSettled ? `${method} (Settled)` : method;
+
+        saveLogsToStorage();
+        closePendingModal();
+        renderSettledLogs();
+        updateHeaderRevenue();
+        showToast(`Payment method updated to ${method} for #${log.invoice}.`, 'success');
+        return;
+      }
+
+      // Update record to paid
+      log.paymentMethod = `${method} (Settled)`;
+      log.settledAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      saveLogsToStorage();
+      closePendingModal();
+      renderSettledLogs();
+      updateHeaderRevenue();
+      showToast(`Payment of ₹${log.grandTotal} cleared via ${method} for #${log.invoice}!`, 'success');
+    }
+
+    function reprintLogReceipt(index) {
+      const log = settledLogs[index];
+      if (!log) return;
+
+      document.getElementById('checkout-subtitle').innerText = `Reprint Receipt: ${log.stationName}`;
+      document.getElementById('receipt-inv-num').innerText = 'INV: #' + log.invoice;
+      document.getElementById('receipt-date-time').innerText = log.date + ' ' + log.timestamp;
+      document.getElementById('modal-station-name').innerText = log.stationName;
+      const modalCustEl = document.getElementById('modal-customer-name');
+      if (modalCustEl) modalCustEl.innerText = log.customerName || 'Guest';
+      const modalMobileEl = document.getElementById('modal-customer-mobile');
+      if (modalMobileEl) modalMobileEl.innerText = log.customerMobile ? `Mobile: ${log.customerMobile}` : '';
+      document.getElementById('modal-duration').innerText = formatTime(log.durationSec);
+      document.getElementById('modal-station-rate').innerText = 'Archived Session';
+      document.getElementById('modal-table-fee').innerText = `₹${log.tableFee}`;
+      document.getElementById('modal-cafe-total').innerText = `₹${log.cafeFee}`;
+      document.getElementById('modal-tax-amount').innerText = `₹${log.tax || 0}`;
+      document.getElementById('modal-discount-input').value = log.discount || 0;
+      document.getElementById('modal-grand-total').innerText = `₹${log.grandTotal}`;
+
+      const itemsList = document.getElementById('modal-cafe-items-list');
+      itemsList.innerHTML = '';
+      if (log.items && log.items.length > 0) {
+        log.items.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'flex justify-between text-xs';
+          row.innerHTML = `<span>${item.qty}x ${item.name}</span> <span>₹${item.price * item.qty}</span>`;
+          itemsList.appendChild(row);
+        });
+      } else {
+        itemsList.innerHTML = `<span class="text-slate-500 italic text-[11px]">No café orders.</span>`;
+      }
+
+      document.getElementById('checkout-modal').classList.remove('hidden');
+    }
+
+    function filterLogs() {
+      const q = document.getElementById('log-search-input').value.toLowerCase();
+      const rows = document.querySelectorAll('#settled-log-body tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    function exportLogsCSV() {
+      if (settledLogs.length === 0) {
+        showToast('No history records to export.', 'error');
+        return;
+      }
+      let csv = 'Invoice,Station,Customer,CustomerMobile,DurationSec,TableFee,CafeFee,Tax,Discount,GrandTotal,PaymentMethod,Time,Date\n';
+      settledLogs.forEach(l => {
+        csv += `"${l.invoice}","${l.stationName}","${l.customerName || 'Guest'}","${l.customerMobile || ''}",${l.durationSec},${l.tableFee},${l.cafeFee},${l.tax || 0},${l.discount || 0},${l.grandTotal},"${l.paymentMethod}","${l.timestamp}","${l.date}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `GameZone_Audit_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported CSV file successfully!', 'success');
+    }
+
+    function updateHeaderRevenue() {
+      // Calculate revenue continuously for the current shift (does NOT reset automatically at 12:00 AM)
+      const currentShiftRev = settledLogs
+        .filter(l => !l.paymentMethod.toUpperCase().includes('UNPAID'))
+        .reduce((acc, cur) => acc + (cur.grandTotal || 0), 0);
+      document.getElementById('header-total-revenue').innerText = '₹' + currentShiftRev;
+
+      // Calculate All-Time Revenue (All past closed shifts + current shift paid revenue + adjustments)
+      const pastShifts = JSON.parse(localStorage.getItem('gz_past_shifts') || '[]');
+      const pastRevenue = pastShifts.reduce((acc, shift) => acc + (shift.totalRevenue || 0), 0);
+      const grossAllTime = pastRevenue + currentShiftRev;
+
+      const adjustments = JSON.parse(localStorage.getItem('gz_alltime_adjustments') || '[]');
+      let netAdjustments = 0;
+      adjustments.forEach(a => {
+        if (a.type === 'add') netAdjustments += (a.amount || 0);
+        else if (a.type === 'deduct') netAdjustments -= (a.amount || 0);
+      });
+
+      const allTimeNetRev = Math.max(0, grossAllTime + netAdjustments);
+
+      const allTimeEl = document.getElementById('header-alltime-revenue');
+      if (allTimeEl) {
+        allTimeEl.innerText = '₹' + allTimeNetRev;
+      }
+    }
+
+    // ALL-TIME REVENUE & EXPENSE ADJUSTMENT HANDLERS
+    function openAllTimeAdjustModal() {
+      const pastShifts = JSON.parse(localStorage.getItem('gz_past_shifts') || '[]');
+      const pastRevenue = pastShifts.reduce((acc, shift) => acc + (shift.totalRevenue || 0), 0);
+      const currentShiftRev = settledLogs
+        .filter(l => !l.paymentMethod.toUpperCase().includes('UNPAID'))
+        .reduce((acc, cur) => acc + (cur.grandTotal || 0), 0);
+      const grossShiftRev = pastRevenue + currentShiftRev;
+
+      const adjustments = JSON.parse(localStorage.getItem('gz_alltime_adjustments') || '[]');
+      let totalAdd = 0;
+      let totalDeduct = 0;
+      adjustments.forEach(a => {
+        if (a.type === 'add') totalAdd += a.amount;
+        else if (a.type === 'deduct') totalDeduct += a.amount;
+      });
+
+      const netBalance = Math.max(0, grossShiftRev + totalAdd - totalDeduct);
+
+      document.getElementById('adj-gross-shift-rev').innerText = '₹' + grossShiftRev;
+      document.getElementById('adj-total-expenses').innerText = '-₹' + totalDeduct;
+      document.getElementById('adj-total-additions').innerText = '+₹' + totalAdd;
+      document.getElementById('adj-current-net-balance').innerText = '₹' + netBalance;
+
+      setAdjustMode('deduct');
+      renderAdjustHistory();
+      document.getElementById('alltime-adjust-modal').classList.remove('hidden');
+    }
+
+    function closeAllTimeAdjustModal() {
+      document.getElementById('alltime-adjust-modal').classList.add('hidden');
+      document.getElementById('alltime-adjust-form').reset();
+    }
+
+    function setAdjustMode(mode) {
+      currentAdjustMode = mode;
+      const btnDeduct = document.getElementById('btn-mode-deduct');
+      const btnAdd = document.getElementById('btn-mode-add');
+      const submitBtn = document.getElementById('adj-submit-btn');
+      const titleLabel = document.getElementById('adj-title-label');
+
+      if (mode === 'deduct') {
+        btnDeduct.className = 'py-2 rounded-xl font-bold text-xs border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center justify-center gap-1.5 transition';
+        btnAdd.className = 'py-2 rounded-xl font-bold text-xs border border-slate-700 bg-slate-950 text-slate-400 hover:text-emerald-300 flex items-center justify-center gap-1.5 transition';
+        submitBtn.className = 'px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition shadow-md shadow-rose-600/20';
+        submitBtn.innerText = 'Deduct Expense';
+        titleLabel.innerText = 'Expense Reason / Purchase Title';
+        document.getElementById('adj-title-input').placeholder = 'e.g. Table Cloth, Rent, Cues, Snacks Stock';
+      } else {
+        btnAdd.className = 'py-2 rounded-xl font-bold text-xs border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center justify-center gap-1.5 transition';
+        btnDeduct.className = 'py-2 rounded-xl font-bold text-xs border border-slate-700 bg-slate-950 text-slate-400 hover:text-rose-300 flex items-center justify-center gap-1.5 transition';
+        submitBtn.className = 'px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition shadow-md shadow-emerald-500/20';
+        submitBtn.innerText = 'Add Funds';
+        titleLabel.innerText = 'Deposit / Inflow Reason';
+        document.getElementById('adj-title-input').placeholder = 'e.g. Advance Booking Deposit, Opening Float, Capital';
+      }
+    }
+
+    function submitAllTimeAdjustment(event) {
+      event.preventDefault();
+      const title = document.getElementById('adj-title-input').value.trim();
+      const amount = parseFloat(document.getElementById('adj-amount-input').value);
+      const category = document.getElementById('adj-category-input').value;
+
+      if (!title || isNaN(amount) || amount <= 0) {
+        showToast('Please enter a valid title and positive amount.', 'error');
+        return;
+      }
+
+      const adjustments = JSON.parse(localStorage.getItem('gz_alltime_adjustments') || '[]');
+      adjustments.unshift({
+        id: Date.now(),
+        type: currentAdjustMode,
+        title: title,
+        amount: Math.round(amount),
+        category: category,
+        timestamp: new Date().toLocaleString()
+      });
+
+      localStorage.setItem('gz_alltime_adjustments', JSON.stringify(adjustments));
+      updateHeaderRevenue();
+      openAllTimeAdjustModal();
+      document.getElementById('alltime-adjust-form').reset();
+      showToast(currentAdjustMode === 'deduct' ? `Deducted ₹${Math.round(amount)} expense.` : `Added ₹${Math.round(amount)} to balance.`, 'success');
+    }
+
+    function renderAdjustHistory() {
+      const list = document.getElementById('adj-history-list');
+      if (!list) return;
+      const adjustments = JSON.parse(localStorage.getItem('gz_alltime_adjustments') || '[]');
+
+      if (adjustments.length === 0) {
+        list.innerHTML = `<div class="text-slate-500 italic text-[11px] py-2 text-center">No expenses or manual adjustments logged yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = '';
+      adjustments.slice(0, 15).forEach((item, idx) => {
+        const isDeduct = item.type === 'deduct';
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center bg-slate-950 p-2 rounded-lg border border-slate-800 text-[11px]';
+        row.innerHTML = `
+          <div class="truncate mr-2">
+            <span class="font-bold ${isDeduct ? 'text-rose-400' : 'text-emerald-400'}">${isDeduct ? '- ' : '+ '}₹${item.amount}</span>
+            <span class="text-slate-300 ml-1.5 truncate">${item.title}</span>
+            <span class="text-slate-500 text-[10px] block font-mono">${item.timestamp} &bull; ${item.category || 'General'}</span>
+          </div>
+          <button onclick="deleteAdjustmentItem(${item.id})" class="text-slate-500 hover:text-rose-400 p-1" title="Delete Entry">
+            <i class="fa-solid fa-trash-can text-xs"></i>
+          </button>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function deleteAdjustmentItem(id) {
+      let adjustments = JSON.parse(localStorage.getItem('gz_alltime_adjustments') || '[]');
+      adjustments = adjustments.filter(a => a.id !== id);
+      localStorage.setItem('gz_alltime_adjustments', JSON.stringify(adjustments));
+      updateHeaderRevenue();
+      openAllTimeAdjustModal();
+      showToast('Adjustment entry removed', 'info');
+    }
+
+    function clearAdjustmentHistory() {
+      if (!confirm('Are you sure you want to clear all expense and adjustment logs?')) return;
+      localStorage.removeItem('gz_alltime_adjustments');
+      updateHeaderRevenue();
+      openAllTimeAdjustModal();
+      showToast('All-time adjustments history cleared.', 'info');
+    }
+
+    // CLOSE SHOP / SHIFT END LOGIC
+    function openCloseShopModal() {
+      const activeRunningCount = stations.filter(s => s.active).length;
+      const warningEl = document.getElementById('close-shop-warning');
+      if (activeRunningCount > 0) {
+        warningEl.classList.remove('hidden');
+      } else {
+        warningEl.classList.add('hidden');
+      }
+
+      document.getElementById('cs-shift-start').innerText = shiftStartTime;
+      document.getElementById('cs-total-txns').innerText = settledLogs.length;
+
+      let cashTotal = 0;
+      let upiTotal = 0;
+      let cardTotal = 0;
+      let unpaidTotal = 0;
+      let grandPaid = 0;
+
+      settledLogs.forEach(log => {
+        const pm = (log.paymentMethod || '').toUpperCase();
+        if (pm.includes('UNPAID')) {
+          unpaidTotal += (log.grandTotal || 0);
+        } else {
+          grandPaid += (log.grandTotal || 0);
+          if (pm.includes('CASH')) cashTotal += (log.grandTotal || 0);
+          else if (pm.includes('UPI') || pm.includes('QR')) upiTotal += (log.grandTotal || 0);
+          else if (pm.includes('CARD')) cardTotal += (log.grandTotal || 0);
+          else cashTotal += (log.grandTotal || 0);
+        }
+      });
+
+      document.getElementById('cs-cash-total').innerText = '₹' + cashTotal;
+      document.getElementById('cs-upi-total').innerText = '₹' + upiTotal;
+      document.getElementById('cs-card-total').innerText = '₹' + cardTotal;
+      document.getElementById('cs-unpaid-total').innerText = '₹' + unpaidTotal;
+      document.getElementById('cs-grand-total').innerText = '₹' + grandPaid;
+
+      document.getElementById('close-shop-modal').classList.remove('hidden');
+    }
+
+    function closeCloseShopModal() {
+      document.getElementById('close-shop-modal').classList.add('hidden');
+    }
+
+    function confirmCloseShop() {
+      const activeRunningCount = stations.filter(s => s.active).length;
+      if (activeRunningCount > 0) {
+        const proceed = confirm(`There are ${activeRunningCount} active station(s) running. Are you sure you want to close the shop now? Active sessions will be stopped.`);
+        if (!proceed) return;
+
+        // Reset any active stations
+        stations.forEach(s => {
+          s.active = false;
+          s.paused = false;
+          s.customerName = null;
+          s.customerMobile = null;
+          s.fixedPrice = null;
+          s.manualOverridePrice = null;
+          s.startTime = null;
+          s.elapsedSec = 0;
+          s.cafeBill = 0;
+          s.items = [];
+        });
+        saveStationsToStorage();
+      }
+
+      // Automatically download shift end audit report before reset
+      downloadDayClosingReport();
+
+      // Store past shift history archive
+      const shiftArchive = JSON.parse(localStorage.getItem('gz_past_shifts') || '[]');
+      const grandPaid = settledLogs
+        .filter(l => !l.paymentMethod.toUpperCase().includes('UNPAID'))
+        .reduce((acc, cur) => acc + (cur.grandTotal || 0), 0);
+
+      shiftArchive.push({
+        shiftStarted: shiftStartTime,
+        shiftClosed: new Date().toLocaleString(),
+        totalTransactions: settledLogs.length,
+        totalRevenue: grandPaid,
+        logs: settledLogs
+      });
+      localStorage.setItem('gz_past_shifts', JSON.stringify(shiftArchive));
+
+      // Reset the current shift ledger
+      settledLogs = [];
+      saveLogsToStorage();
+
+      shiftStartTime = new Date().toLocaleString();
+      localStorage.setItem('gz_shift_start', shiftStartTime);
+
+      closeCloseShopModal();
+      renderStations();
+      renderSettledLogs();
+      updateHeaderRevenue();
+      showToast('Shop closed! Shift report downloaded and revenue reset for the next opening.', 'success');
+    }
+
+    function downloadDayClosingReport() {
+      let cashTotal = 0;
+      let upiTotal = 0;
+      let cardTotal = 0;
+      let unpaidTotal = 0;
+      let grandPaid = 0;
+
+      settledLogs.forEach(log => {
+        const pm = (log.paymentMethod || '').toUpperCase();
+        if (pm.includes('UNPAID')) {
+          unpaidTotal += (log.grandTotal || 0);
+        } else {
+          grandPaid += (log.grandTotal || 0);
+          if (pm.includes('CASH')) cashTotal += (log.grandTotal || 0);
+          else if (pm.includes('UPI') || pm.includes('QR')) upiTotal += (log.grandTotal || 0);
+          else if (pm.includes('CARD')) cardTotal += (log.grandTotal || 0);
+          else cashTotal += (log.grandTotal || 0);
+        }
+      });
+
+      let reportText = `=====================================\n`;
+      reportText += `   GAMEZONE - SNOOKER STREET POS    \n`;
+      reportText += `       DAILY SHIFT CLOSING REPORT    \n`;
+      reportText += `=====================================\n`;
+      reportText += `Shift Opened: ${shiftStartTime}\n`;
+      reportText += `Shift Closed: ${new Date().toLocaleString()}\n`;
+      reportText += `Total Invoices: ${settledLogs.length}\n`;
+      reportText += `-------------------------------------\n`;
+      reportText += `Cash Collected:      Rs. ${cashTotal}\n`;
+      reportText += `UPI / QR Collected:  Rs. ${upiTotal}\n`;
+      reportText += `Card Collected:      Rs. ${cardTotal}\n`;
+      reportText += `Pending / Unpaid:    Rs. ${unpaidTotal}\n`;
+      reportText += `-------------------------------------\n`;
+      reportText += `TOTAL COLLECTED:     Rs. ${grandPaid}\n`;
+      reportText += `=====================================\n\n`;
+      reportText += `SESSION BREAKDOWN:\n`;
+      reportText += `-------------------------------------\n`;
+
+      settledLogs.forEach((l, idx) => {
+        reportText += `${idx + 1}. [${l.invoice}] ${l.stationName} | Cust: ${l.customerName || 'Guest'} | Rs. ${l.grandTotal} (${l.paymentMethod}) @ ${l.timestamp}\n`;
+      });
+
+      reportText += `\n=====================================\n`;
+      reportText += `End of Shift Audit Report\n`;
+      reportText += `=====================================\n`;
+
+      const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Day_Closing_Report_${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // CONFIGURATION & CUSTOM TABLE MANAGEMENT
+    function renderConfigTable() {
+      const tbody = document.getElementById('station-config-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      stations.forEach(s => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="p-3 font-mono font-bold text-slate-500">#${s.id}</td>
+          <td class="p-3 font-semibold text-slate-200">${s.name}</td>
+          <td class="p-3 uppercase text-[10px] text-amber-400 font-bold">${s.type}</td>
+          <td class="p-3 font-mono font-semibold">₹${s.hourlyRate} / hour</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}">
+              ${s.active ? 'Occupied' : 'Idle'}
+            </span>
+          </td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="editStation(${s.id})" class="text-slate-400 hover:text-amber-400 transition" title="Edit Rate/Name">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="deleteStation(${s.id})" class="text-slate-400 hover:text-red-400 transition" title="Delete Station">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function openNewStationModal() {
+      document.getElementById('edit-station-id').value = '';
+      document.getElementById('station-form').reset();
+      document.getElementById('station-modal-title').innerHTML = `<i class="fa-solid fa-plus-circle text-amber-400"></i> Add New Table / Console`;
+      document.getElementById('station-modal').classList.remove('hidden');
+    }
+
+    function editStation(id) {
+      const s = stations.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('edit-station-id').value = s.id;
+      document.getElementById('station-name-input').value = s.name;
+      document.getElementById('station-type-input').value = s.type;
+      document.getElementById('station-rate-input').value = s.hourlyRate;
+      document.getElementById('station-modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-400"></i> Edit Station #${s.id}`;
+      document.getElementById('station-modal').classList.remove('hidden');
+    }
+
+    function closeStationModal() {
+      document.getElementById('station-modal').classList.add('hidden');
+    }
+
+    function saveStation(event) {
+      event.preventDefault();
+      const editId = document.getElementById('edit-station-id').value;
+      const name = document.getElementById('station-name-input').value.trim();
+      const type = document.getElementById('station-type-input').value;
+      const hourlyRate = parseFloat(document.getElementById('station-rate-input').value);
+
+      if (editId) {
+        // Update existing
+        const s = stations.find(x => x.id === parseInt(editId));
+        if (s) {
+          s.name = name;
+          s.type = type;
+          s.hourlyRate = hourlyRate;
+          showToast(`Updated station: ${name}`, 'success');
+        }
+      } else {
+        // Add new
+        const newId = stations.length > 0 ? Math.max(...stations.map(x => x.id)) + 1 : 1;
+        stations.push({
+          id: newId,
+          name: name,
+          type: type,
+          hourlyRate: hourlyRate,
+          active: false,
+          paused: false,
+          startTime: null,
+          elapsedSec: 0,
+          cafeBill: 0,
+          items: []
+        });
+        showToast(`Added new station: ${name}`, 'success');
+      }
+
+      saveStationsToStorage();
+      closeStationModal();
+      renderStations();
+    }
+
+    function deleteStation(id) {
+      const s = stations.find(x => x.id === id);
+      if (!s) return;
+      if (s.active) {
+        showToast('Cannot delete a running station. Settle or cancel first.', 'error');
+        return;
+      }
+      stations = stations.filter(x => x.id !== id);
+      saveStationsToStorage();
+      renderStations();
+      showToast(`Removed station #${id}`, 'info');
+    }
+
+    // TAB NAVIGATION
+    function switchTab(tabId) {
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+      const activeSec = document.getElementById(`tab-${tabId}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-400', 'text-slate-950', 'font-semibold', 'shadow-md', 'shadow-amber-400/20');
+        btn.classList.add('text-slate-400');
+      });
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.add('bg-amber-400', 'text-slate-950', 'font-semibold', 'shadow-md', 'shadow-amber-400/20');
+        activeNav.classList.remove('text-slate-400');
+      }
+
+      if (tabId === 'billing') applyDateFilter();
+      if (tabId === 'manage') renderConfigTable();
+      if (tabId === 'cafe') renderCafe();
+      if (tabId === 'players') renderPlayerFiles();
+    }
+
+    // CUSTOMER DOSSIER & DAILY PLAYER SUMMARY FILE
+    function getCustomerAggregatedData() {
+      const playerMap = {};
+
+      settledLogs.forEach(log => {
+        const name = (log.customerName && log.customerName.trim()) ? log.customerName.trim() : 'Guest Player';
+        if (!playerMap[name]) {
+          playerMap[name] = {
+            name: name,
+            totalGames: 0,
+            totalAmount: 0,
+            paidAmount: 0,
+            dueAmount: 0,
+            totalDurationSec: 0,
+            sessions: []
+          };
+        }
+
+        const isUnpaid = log.paymentMethod && log.paymentMethod.toUpperCase().includes('UNPAID');
+        playerMap[name].totalGames += 1;
+        playerMap[name].totalAmount += (log.grandTotal || 0);
+        playerMap[name].totalDurationSec += (log.durationSec || 0);
+
+        if (isUnpaid) {
+          playerMap[name].dueAmount += (log.grandTotal || 0);
+        } else {
+          playerMap[name].paidAmount += (log.grandTotal || 0);
+        }
+
+        playerMap[name].sessions.push({
+          invoice: log.invoice,
+          stationName: log.stationName,
+          durationSec: log.durationSec,
+          grandTotal: log.grandTotal,
+          paymentMethod: log.paymentMethod,
+          timestamp: log.timestamp
+        });
+      });
+
+      return Object.values(playerMap);
+    }
+
+    function renderPlayerFiles() {
+      const container = document.getElementById('player-files-grid');
+      const emptyMsg = document.getElementById('no-players-msg');
+      if (!container) return;
+
+      const players = getCustomerAggregatedData();
+
+      // Update stat cards
+      const totalPlayersCount = players.length;
+      const totalGamesPlayed = players.reduce((acc, p) => acc + p.totalGames, 0);
+      const totalRevenueCollected = players.reduce((acc, p) => acc + p.paidAmount, 0);
+      const avgSpend = totalPlayersCount > 0 ? Math.round(totalRevenueCollected / totalPlayersCount) : 0;
+
+      document.getElementById('stat-total-players').innerText = totalPlayersCount;
+      document.getElementById('stat-total-games-played').innerText = totalGamesPlayed;
+      document.getElementById('stat-avg-spend').innerText = '₹' + avgSpend;
+
+      container.innerHTML = '';
+
+      if (players.length === 0) {
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      players.forEach((p, idx) => {
+        const fileCard = document.createElement('div');
+        fileCard.className = 'player-file-card bg-slate-900 border border-slate-800 hover:border-amber-400/50 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition group';
+        
+        // Render up to 3 session preview rows
+        const sessionRows = p.sessions.slice(0, 4).map(s => `
+          <div class="flex justify-between items-center py-1 text-[11px] text-slate-300 border-b border-slate-800/60 last:border-0 font-mono">
+            <span class="truncate pr-2 text-slate-200">
+              <i class="fa-solid fa-gamepad text-amber-400 text-[10px] mr-1"></i>${s.stationName}
+            </span>
+            <span class="font-bold text-amber-400 whitespace-nowrap">₹${s.grandTotal}</span>
+          </div>
+        `).join('');
+
+        fileCard.innerHTML = `
+          <div>
+            <!-- Folder Top Tab Header -->
+            <div class="flex items-start justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400 flex items-center justify-center text-lg font-black shadow-inner">
+                  <i class="fa-solid fa-folder"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-extrabold text-white group-hover:text-amber-400 transition flex items-center gap-1.5">
+                    ${p.name}
+                  </h3>
+                  <span class="text-[10px] text-slate-400 font-mono">
+                    <i class="fa-solid fa-clock text-[9px] mr-0.5"></i> Playtime: ${formatTime(p.totalDurationSec)}
+                  </span>
+                </div>
+              </div>
+              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${p.dueAmount > 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+                ${p.dueAmount > 0 ? 'Due: ₹' + p.dueAmount : 'All Clear'}
+              </span>
+            </div>
+
+            <!-- Total Counts -->
+            <div class="grid grid-cols-2 gap-2 my-3 font-mono">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+                <div class="text-[10px] text-slate-500 uppercase font-sans">Games Played</div>
+                <div class="text-sm font-extrabold text-white mt-0.5">${p.totalGames} ${p.totalGames === 1 ? 'Match' : 'Matches'}</div>
+              </div>
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 text-right">
+                <div class="text-[10px] text-slate-500 uppercase font-sans">Total Spend</div>
+                <div class="text-sm font-extrabold text-amber-400 mt-0.5">₹${p.totalAmount}</div>
+              </div>
+            </div>
+
+            <!-- Games / Matches List -->
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5 flex justify-between">
+                <span>Games Breakdown</span>
+                <span class="font-normal text-slate-500">${p.sessions.length} record(s)</span>
+              </div>
+              <div class="bg-slate-950/70 rounded-xl p-2.5 border border-slate-800/60 max-h-36 overflow-y-auto custom-scroll">
+                ${sessionRows}
+                ${p.sessions.length > 4 ? `<div class="text-[10px] text-slate-500 text-center pt-1 italic">+${p.sessions.length - 4} more session(s)</div>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+            <span class="text-[11px] text-slate-400 font-mono">Paid: <b class="text-emerald-400">₹${p.paidAmount}</b></span>
+            <button onclick="downloadSinglePlayerReport('${encodeURIComponent(p.name)}')" class="px-3 py-1.5 bg-slate-800 hover:bg-amber-400 hover:text-slate-950 text-slate-200 font-bold rounded-xl transition flex items-center gap-1.5 text-[11px] active:scale-95">
+              <i class="fa-solid fa-file-invoice"></i> Player Slip
+            </button>
+          </div>
+        `;
+
+        container.appendChild(fileCard);
+      });
+    }
+
+    function filterPlayerFiles() {
+      const q = document.getElementById('player-search-input').value.toLowerCase();
+      const cards = document.querySelectorAll('.player-file-card');
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    function downloadSinglePlayerReport(encodedName) {
+      const name = decodeURIComponent(encodedName);
+      const players = getCustomerAggregatedData();
+      const p = players.find(x => x.name === name);
+      if (!p) return;
+
+      let fileText = `=====================================\n`;
+      fileText += `    GAMEZONE - PLAYER DOSSIER FILE    \n`;
+      fileText += `=====================================\n`;
+      fileText += `Player / Customer: ${p.name}\n`;
+      fileText += `Date:              ${new Date().toLocaleDateString()}\n`;
+      fileText += `Total Games/Slots: ${p.totalGames}\n`;
+      fileText += `Total Duration:    ${formatTime(p.totalDurationSec)}\n`;
+      fileText += `-------------------------------------\n`;
+      fileText += `Total Amount:      Rs. ${p.totalAmount}\n`;
+      fileText += `Paid Amount:       Rs. ${p.paidAmount}\n`;
+      fileText += `Pending / Due:     Rs. ${p.dueAmount}\n`;
+      fileText += `=====================================\n`;
+      fileText += `MATCHES & TRANSACTIONS BREAKDOWN:\n`;
+      fileText += `-------------------------------------\n`;
+
+      p.sessions.forEach((s, i) => {
+        fileText += `${i + 1}. [${s.invoice}] ${s.stationName}\n`;
+        fileText += `   Time: ${s.timestamp} | Dur: ${formatTime(s.durationSec)} | Rs. ${s.grandTotal} (${s.paymentMethod})\n`;
+      });
+
+      fileText += `\n=====================================\n`;
+      fileText += `GameZone - Snooker Street Lounge POS\n`;
+      fileText += `=====================================\n`;
+
+      const blob = new Blob([fileText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Player_Dossier_${p.name.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Exported dossier file for ${p.name}`, 'info');
+    }
+
+    function exportPlayerSummaryText() {
+      const players = getCustomerAggregatedData();
+      if (players.length === 0) {
+        showToast('No player records found for this shift.', 'error');
+        return;
+      }
+
+      let summaryText = `=====================================\n`;
+      summaryText += `   GAMEZONE - ALL PLAYERS FILE LEDGER\n`;
+      summaryText += `=====================================\n`;
+      summaryText += `Date: ${new Date().toLocaleString()}\n`;
+      summaryText += `Total Players: ${players.length}\n`;
+      summaryText += `-------------------------------------\n`;
+
+      players.forEach((p, idx) => {
+        summaryText += `${idx + 1}. ${p.name.toUpperCase()}\n`;
+        summaryText += `   Games Played: ${p.totalGames} frame(s)\n`;
+        summaryText += `   Playtime:     ${formatTime(p.totalDurationSec)}\n`;
+        summaryText += `   Total Bill:   Rs. ${p.totalAmount} (Paid: Rs. ${p.paidAmount} | Due: Rs. ${p.dueAmount})\n\n`;
+      });
+
+      summaryText += `=====================================\n`;
+      summaryText += `End of Player Ledger Summary\n`;
+      summaryText += `=====================================\n`;
+
+      const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `All_Players_Ledger_${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported complete players file ledger!', 'success');
+    }
+
+    // PWA & Offline App Installation Handler
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('pwa-install-btn');
+      if (installBtn) installBtn.classList.remove('hidden');
+    });
+
+    function installOfflineApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast('Installing GameZone to your home screen...', 'success');
+          }
+          deferredPrompt = null;
+          const installBtn = document.getElementById('pwa-install-btn');
+          if (installBtn) installBtn.classList.add('hidden');
+        });
+      } else {
+        showToast('To install: Open Chrome menu (⋮) and tap "Install App" or "Add to Home screen"', 'info');
+      }
+    }
+
+    // Register Inline Service Worker for full Offline capability
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE_NAME = 'gz-pos-cache-v1';
+        self.addEventListener('install', (e) => {
+          self.skipWaiting();
+        });
+        self.addEventListener('activate', (e) => {
+          e.waitUntil(clients.claim());
+        });
+        self.addEventListener('fetch', (e) => {
+          e.respondWith(
+            fetch(e.request).catch(() => caches.match(e.request))
+          );
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    }
+
+    // BOOTSTRAP APP
+    window.onload = function() {
+      renderStations();
+      renderCafe();
+      renderCafeCart();
+      applyDateFilter();
+      updateHeaderRevenue();
+    };
+  </script>
+</body>
+</html>
